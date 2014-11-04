@@ -148,35 +148,22 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 	pop$whichClasses <- sapply(1:nPathogens, function(x) grep(x, pop$diseaseClasses))
 	pop$nClasses <- length(pop$diseaseClasses)
 	
-	pop$I <- array(0, dim=c(pop$nClasses, nColonies, events), dimnames=c('pathogen', 'colony', 'events'))
+	pop$I <- array(0, dim=c(pop$nClasses, nColonies, events + 1), dimnames=c('pathogen', 'colony', 'events'))
 	
 	# Create colony sizes based on model in colonyDistr
 	pop$I[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
 
-	# Make element that stores transition probabilities
-	# How many coinfection transitions
-	coinfectionTrans <- sum(sapply(0:nPathogens, function(k) choose(nPathogens, k)*(nPathogens-k) ) )
-
-	# How many total transitions
-	#distinctTrans <- nColonies + nColonies*pop$nClasses + coinfectionTrans +nColonies*(nColonies-1)*pop$nClasses
-	infectTrans <- infectionTrans(pop)
-	
-	pop$transitions <- rbind(
-				data.frame(type='birth', fromColony=NA, fromClass=NA, toColony=1:nColonies, toClass=1, rate=birthR(pop,1)),
-				data.frame(type='death', fromColony=rep(1:nColonies, pop$nClasses), fromClass=rep(1:pop$nClasses, each=nColonies), toColony=NA, toClass=NA, rate=deathR(pop,1)),
-				data.frame(type='infection', fromColony=rep(1:nColonies, length(infectTrans[,1])) , fromClass=rep(infectTrans[,1], each=nColonies), toColony=rep(1:nColonies, length(infectTrans[,1])), toClass=rep(infectTrans[,2], each=nColonies), rate=NA),
-				data.frame(type='dispersal', fromColony=rep(pop$edgeList[,1], pop$nClasses), fromClass=rep(1:pop$nClasses, each=NROW(pop$edgeList)), toColony=rep(pop$edgeList[,2], pop$nClasses), toClass=rep(1:pop$nClasses, each=NROW(pop$edgeList)), rate=NA)
-				)
-
-	pop$transitions$rate <- c(birthR(pop,1), deathR(pop,1),  rep(0,nColonies*length(infectTrans[,1])) , dispersalR(pop,1))
-                    
-  pop$totalRate <- sum(pop$transitions$rate)			
+	pop <- transRates(pop, 1)
 
   # Make vector for waiting times.
-  pop$waiting <- rep(0,events)
+  pop$waiting <- rep(0,events + 1)
+  
   # Precalculate random uniform numbers. Will go into function waitingTime() to give exponential waiting time
-  pop$randU <- runif(events)
+  pop$randU <- runif(events + 1)
+
+  # Precalculate random uniform numbers. Will go into function randomEvent() to select an event
+  pop$randEventU <- runif(events + 1)
 
   class(pop) <- 'MetapopEpi'
 
@@ -239,22 +226,47 @@ sumI <- function(pop, t){
 #'
 #'@param randU Numeric in [0,1]. Typically this will a random uniform number. 
 # @tim Need rewriting. Yup, totally wrong.
-waitingTime <- function(randU, S, I, beta, b, d){
-	lambda <- I*S*beta + b*(I+S) + d*(I+S)
-	w <- log(1-randU)/(-lambda)
-	return(w)
+waitingTime <- function(pop, t){
+  pop$waiting[t + 1] <- log(1 - pop$randU[t])/(-pop$totalRate)
+  return(pop)
 }
 
-# 
-randEvent <- function(){
+#' Perform a random event
+#' 
+#' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
+#'@param pop A population object
+#'@param t Time step. Note the population should be AT time t, going to t+1.
+#'@name randEvent 
 
-        }
+randEvent <- function(pop, t){
+  # Calculate random number each time. Expect, precalcing randUnifs might be quicker.
+  # event <- sample(1:nrow(pop$transitions), size = 1, prob = pop$transitions$rate)
+
+  # Using precalcuated random uniforms in [0,1], pop$randEventU
+  # Find which interval this falls in as quick way to select value
+  # Should have a think about open and closed intervalsfromClass toColony toClass rate
+
+  event <- pop$transitions[findInterval(pop$randEventU[t]*pop$totalRate, cumsum(c(0, pop$transitions$rate))), ]
+
+  # Copy pop to t + 1
+  pop$I[, , t + 1] <- pop$I[, , t]
+  
+  # run event
+  pop$I[event[['fromClass']], event[['fromColony']], t + 1] <- pop$I[event[['fromClass']], event[['fromColony']], t ] - 1
+  pop$I[event[['toClass']], event[['toColony']], t + 1] <- pop$I[event[['toClass']], event[['toColony']], t] + 1
+
+  pop <- transRates(pop, t + 1)
+  
+  pop <- waitingTime(pop, t)
+
+  return(pop)
+}
 
 
 
 # Calc new transition rates.
 
-transRates <- function(pop){
+transRates <- function(pop, t){
 
 	# Make element that stores transition probabilities
 	# How many coinfection transitions
@@ -266,13 +278,17 @@ transRates <- function(pop){
 
 
 	transitions <- rbind(
-				data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1)),
+				data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
 				data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
 				data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
 				data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
 				)
+  transitions$rate <- c(birthR(pop,t), deathR(pop,t),  rep(0,pop$parameters['nColonies']*length(infectTrans[,1])) , dispersalR(pop,t))
 
   pop$transitions <- transitions
+
+  # Reculculate total rate.
+  pop$totalRate <- sum(pop$transitions$rate)			
   return(pop)
 }
 
@@ -307,6 +323,21 @@ deathR <- function(pop, t){
   return(as.vector(apply(pop$I[,,t], 1, function(x) x*pop$parameters['death'] )))
 }
 
+		
+#' Calculate dispersal rates for each colony.
+#'
+#' Calculate starting dispersal rate for each colony. Later functions recalculate relevant rates after an event.
+#'
+#'@inheritParams sumI
+#'@name dispersalR
+#'@family initialRates
+#' 
+dispersalR <- function(pop,t){
+  return(pop$parameters['dispersal']*as.vector(t(pop$I[,pop$edgeList[,1],t])*pop$adjacency[pop$edgeList]))
+}
+
+
+
 #' Find possible possible infection transitions.
 #'
 #'
@@ -326,119 +357,6 @@ infectionTrans <- function(pop){
   return(which(transMatr==1, arr.ind=TRUE))
 }
 
-		
-#' Calculate dispersal rates for each colony.
-#'
-#' Calculate starting dispersal rate for each colony. Later functions recalculate relevant rates after an event.
-#'
-#'@inheritParams sumI
-#'@name dispersalR
-#'@family initialRates
-#' 
-dispersalR <- function(pop,t){
-  return(pop$parameters['dispersal']*as.vector(t(pop$I[,pop$edgeList[,1],t])*pop$adjacency[pop$edgeList]))
-}
-
-########################################################################################
-
-death <- function(pop, t){
-                }
-
-birth <- function(pop, t){
-                }
-
-infection <- function(pop, t){
-                }
-
-dispersal <- function(pop, t){
-                }
-
-
-####################################################################################################################
-####################################################################################################################
-# colony placement models
-
-
-
-
-#' Make a matrix of N colony locations placed by a spatial poisson process.
-#'
-#' Uniformally random placement of colonies in two dimensions.
-#'
-#'@param N Number of colonies. A single, positive integer.
-#'@param space The size of space as given by the length of one side of square space.
-#'@name uniformColony
-#'@family colony.placement
-
-uniformColony <- function(N, space){
-	assert_that(N%%1==0, N>0, is.numeric(space), space>0)
-	x <- cbind(runif(N, 0, space), runif(N, 0, space))
-	return(x)
-}
-
-#' Place colonies in a circle. Most good for viz when all colonies are connected etc..
-#'
-#' Radial placement of colonies in two dimensions.
-#'
-#'@inheritParams uniformColony
-#'@name circleColony
-#'@family colony.placement
-
-circleColony <- function(N, space){     
-	assert_that(N%%1==0, N>0, is.numeric(space), space>0)
-  deg <- 1:N*2*pi/N
-  r <- 0.4*space
-  x <- cbind(r*cos(deg)+space/2, r*sin(deg)+space/2)
-}
-
-
-
-
-
-
-####################################################################################################################
-####################################################################################################################
-
-
-
-# Population size distributions
-
-
-#' Create equal colony sizes.
-#'
-#'@inheritParams exponentialPop 
-#'@param colonySize The size of all colonies
-#'@name equalPop
-#'@family colonysize.distribution
-
-equalPop <- function(nColonies, colonySize){
-	S <- rep(colonySize, nColonies)
-	return(S)
-}
-
-#' Create exponential colony size distribution.
-#'
-#' Create random colony size distirbution from exponential distribution.
-#'
-#'@param nColonies The number of colonies. A single integer. 
-#'@param meanColonySize Mean colony size. 
-#'@name exponentialPop
-#'@family colonysize.distribution
-
-exponentialPop <- function(nColonies, meanColonySize){
-	S <- rexp(nColonies, 1/meanColonySize) %>% ceiling
-	return(S)		
-}
-
-#' Create colony sizes based on poisson distribution.
-#'
-#'@inheritParams exponentialPop 
-#'@name poissonPop
-#'@family colonysize.distribution
-poissonPop <- function(nColonies, meanColonySize){
-	S <- rpois(nColonies, meanColonySize)
-	return(S)
-}
 
 
 
@@ -565,58 +483,6 @@ netStrength <- function(pop){
 }
                 
 
-####################################################################################################################
-####################################################################################################################
-
-#' Inverse kernel for calculating a weight matrix from a distance matrix
-#'
-#' 1/distance with a threshold. 
-#'   
-#'@param distMatrix A distance matrix of the euclidean distances between each pair of colonies
-#'@param thresh A maximum distance above which colonies are not connected.
-#'
-#'@name inverseKern
-#'@family kernels 
-
-inverseKern <- function(distMatrix, thresh){
-	t <- max(distMatrix)/thresh
-	W <- max(distMatrix)/distMatrix
-	W[is.infinite(W)] <- 0
-	W[W<t] <- 0
-	return(W)
-}
-
-#' Linear kernel for calculating a weight matrix from a distance matrix
-#'
-#' 1 - distance with a threshold. 
-#'   
-#'@inheritParams inverseKern
-#'
-#'@name linearKern
-#'@family kernels 
-
-linearKern <- function(distMatrix, thresh){
-	t <- max(distMatrix) - thresh
-	W <- max(distMatrix) - distMatrix
-	W[is.infinite(W)] <- 0
-	W[W<t] <- 0
-	return(W)
-}
-
-#' Unweighted kernel for calculating a weight matrix from a distance matrix
-#'
-#' Creates an unweighted network. As long as distance < theshold, the weight is 1.
-#'   
-#'@inheritParams inverseKern
-#'
-#'@name unweightedKern
-#'@family kernels 
-unweightedKern <- function(distMatrix, thresh){
-  W <- (distMatrix<thresh)*1
-  diag(W) <- 0
-  return(W)
-}
-
 
 ########################################################################################################################
 
@@ -638,65 +504,6 @@ edgeList <- function(pop){
   listOfEdges <- cbind(listOfEdges, W[listOfEdges])
 	
 	return(listOfEdges)
-}
-
-
-###########################################################################################
-# Some graphics functions
-
-#' Plot the population network in space
-#'
-#' Plot showing the colonies, and the edges between them, with line thickness indicating weight.
-#'   
-#'@inheritParams seedPathogen
-#'@param lwd Relative line width. This value is scaled to a reasonable value.
-#'
-#'@name plotColonyNet
-#'@family viz 
-#'@export
-
-plotColonyNet <- function(pop, lwd=2){
-	assert_that(is.numeric(pop$locations), all(c('locations', 'models') %in% names(pop)))
-				
-	E <- edgeList(pop)
-	edgeLocations <- cbind(pop$locations[E[,1],], pop$locations[E[,2],], lwd*E[,3]/max(E[,3]))			
-
-	
-	par(mar=c(5,5,1,1)+0.3)
-	plot(pop$locations, pch=16, col=brewer.pal(3,'Set1')[1], cex=1,
-		ylab='lat', xlab='lon')
-	
-	apply(edgeLocations,1, function(x) lines(x[c(1,3)],x[c(2,4)], lwd=x[5]))
-  points(pop$locations, pch=16, col=brewer.pal(3,'Set1')[1], cex=3)
-}
-
-
-#' A nice heat map for weighted adjacency matrices
-#'
-#' Plot showing the weight of edges by colouring the adjacency matrix.
-#'   
-#'@param weightMatrix A matrix 
-#'
-#'@name plotColonyNet
-#'@family viz 
-
-colonyHeat <- function(weightMatrix){
-	heatmap(weightMatrix,  scale="none",lwd=3, labRow='', labCol='',  
-		col=colorRampPalette(brewer.pal(9,"YlOrRd"))(256))
-}
-
-#' A nice heat map for weighted adjacency matrices
-#'
-#' Plot showing the weight of edges by colouring the adjacency matrix.
-#'   
-#'@inheritParams seedPathogen
-#'
-#'@name popHeat
-#'@family viz 
-#'@export
-
-popHeat <- function(pop){
-	colonyHeat(pop$adjacency)
 }
 
 
