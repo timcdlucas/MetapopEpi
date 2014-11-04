@@ -219,6 +219,9 @@ sumI <- function(pop, t){
 	return(sapply(1:pop$parameters['nPathogens'], function(x) colSums(pop$I[pop$whichClasses[,x],,t])))
 }
 
+
+
+
 #' Takes a number [0,1] (which is presumably random) and returns waiting time.
 #'
 #' A single draw from a exponential distribution given randU, a number between 0 and 1.

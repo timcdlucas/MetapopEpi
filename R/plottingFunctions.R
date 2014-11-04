@@ -174,6 +174,42 @@ pPop <- function(pop, o = FALSE){
 }
 
 
+pAll <- function(pop, 0 = FALSE){
+
+  # Sum infections from different classes
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$I[pop$whichClasses[,x],,], c(2,3) , sum))
+
+  z2 <- do.call(rbind, z)
+
+  
+  d <- cbind(t(z2), cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(d, 'disease')
+  colnames(d)[c(NCOL(d)-1, NCOL(d))] <- c('time', 'state')
+
+  s <- cbind(t(pop$I[1,,]), cumsum(pop$waiting)) %>% data.frame
+  s <- cbind(s, 'susceptible')
+  colnames(s)[c(NCOL(s)-1, NCOL(s))] <- c('time', 'state')
+
+  longd <- melt(d, id = c('time', 'state') , variable_name = 'Colony')
+  longs <- melt(s, id = c('time', 'state') , variable_name = 'Colony')
+  
+  longAll <- rbind(longd, longs)
+
+  ggplot(data = longAll,
+       aes(x = time, y = value, colour = Colony)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() 
+    scale_color_manual(values = greySelection) +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme(legend.position="none")
+
+
+}
+
+
+
+
 
 
 
