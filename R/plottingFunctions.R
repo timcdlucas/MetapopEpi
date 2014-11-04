@@ -64,7 +64,12 @@ popHeat <- function(pop){
 # Time series plots
 
 
-#' Plot the number of susceptible individuals in 
+#' Plot the number of susceptible individuals in each colony
+#'
+#'@param pop A population object
+#'@param o Logical whether to plot from the origin or not
+#'@name pSus
+#'@export
 
 pSus <- function(pop, o = FALSE){
   
@@ -90,11 +95,83 @@ pSus <- function(pop, o = FALSE){
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
     theme(legend.position="none")
 
+}
 
+#' Plot the total number of infected individuals in each colony
+#'
+#'@inheritParams pSus
+#'@name pInf
+#'@export
+
+
+pInf <- function(pop, o = FALSE){
+  
+  I <- pop$I[2:NROW(pop$I),,] %>% apply(., c(2,3), sum) %>% t
+
+  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  colnames(d)[NCOL(d)] <- 'time'
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
+
+  longd <- melt(d, id = 'time', variable_name = 'Colony')
+
+  ggplot(data = longd,
+       aes(x = time, y = value, colour = Colony)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() +
+    scale_color_manual(values = greySelection) +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme(legend.position="none")
 
 }
 
 
+
+
+
+
+
+#' Plot the total number of individuals in each colony
+#'
+#'@inheritParams pSus
+#'@name pPop
+#'@export
+
+
+pPop <- function(pop, o = FALSE){
+  
+  I <- pop$I %>% apply(., c(2,3), sum) %>% t
+
+  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  colnames(d)[NCOL(d)] <- 'time'
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
+
+  longd <- melt(d, id = 'time', variable_name = 'Colony')
+
+  ggplot(data = longd,
+       aes(x = time, y = value, colour = Colony)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() +
+    scale_color_manual(values = greySelection) +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme(legend.position="none")
+
+}
 
 
 
