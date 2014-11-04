@@ -7,7 +7,7 @@
 #'@name MetapopEpi
 #'@author Tim CD Lucas
 #'@docType package
-#'@import assertthat RColorBrewer magrittr igraph
+#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape
 
 NULL
 
@@ -188,7 +188,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 #'u <- seedPathogen(p, pathogens = 1:p$parameters['nPathogens'])
 
 
-seedPathogen <- function(pop, pathogens = 1){
+seedPathogen <- function(pop, pathogens = 1, n = 1){
 	
   assert_that(all(sapply(pathogens, is.count)))
 	# can't seed more species than were initiliased.
@@ -198,9 +198,9 @@ seedPathogen <- function(pop, pathogens = 1){
 	for(path in pathogens){
 		# choose random colony
 		r <- sample(pop$parameters['nColonies'], 1)
-		pop$I[path+1, r, 1] <- 1
+		pop$I[path+1, r, 1] <- n
 		# keep pop size constant
-		pop$I[1, r, 1] <- pop$I[1, r, 1] - 1
+		pop$I[1, r, 1] <- pop$I[1, r, 1] - n
 	}
 	return(pop)
 }
