@@ -76,15 +76,17 @@ pSus <- function(pop, o = FALSE){
   d <- cbind(t(pop$I[1,,]), cumsum(pop$waiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
+
+  longd <- melt(d, id = 'time', variable_name = 'Colony')
+
+  
   if(o){
     ymin <- 0
   } else { 
     ymin <- min(longd$value)
   }
-
-  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
-
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
 
   ggplot(data = longd,
        aes(x = time, y = value, colour = Colony)) +
@@ -111,15 +113,16 @@ pInf <- function(pop, o = FALSE){
   d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
+
+  longd <- melt(d, id = 'time', variable_name = 'Colony')
+
   if(o){
     ymin <- 0
   } else { 
     ymin <- min(longd$value)
   }
-
-  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
-
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
 
   ggplot(data = longd,
        aes(x = time, y = value, colour = Colony)) +
@@ -152,15 +155,17 @@ pPop <- function(pop, o = FALSE){
   d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
+
+  longd <- melt(d, id = 'time', variable_name = 'Colony')
+
+
   if(o){
     ymin <- 0
   } else { 
     ymin <- min(longd$value)
   }
-
-  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
-
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
 
   ggplot(data = longd,
        aes(x = time, y = value, colour = Colony)) +
@@ -174,7 +179,7 @@ pPop <- function(pop, o = FALSE){
 }
 
 
-pAll <- function(pop, 0 = FALSE){
+pAll <- function(pop, o = FALSE){
 
   # Sum infections from different classes
   z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$I[pop$whichClasses[,x],,], c(2,3) , sum))
@@ -190,27 +195,79 @@ pAll <- function(pop, 0 = FALSE){
   s <- cbind(s, 'susceptible')
   colnames(s)[c(NCOL(s)-1, NCOL(s))] <- c('time', 'state')
 
-  longd <- melt(d, id = c('time', 'state') , variable_name = 'Colony')
-  longs <- melt(s, id = c('time', 'state') , variable_name = 'Colony')
+  longd <- melt(d, id = c('time', 'state') , variable_name = 'colony')
+  longs <- melt(s, id = c('time', 'state') , variable_name = 'colony')
   
   longAll <- rbind(longd, longs)
 
+  longAll$colonyState <- paste0(longAll$colony, longAll$state) %>% factor
+
+
+  twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
+  twoGroups[grep('disease',names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
+  names(twoGroups) <- names(table(longAll$colonyState))
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longAll$value)
+  }
+
   ggplot(data = longAll,
-       aes(x = time, y = value, colour = Colony)) +
+       aes(x = time, y = value, colour = colonyState)) +
     geom_line() +
     ylab('Individuals') + 
-    theme_minimal() 
-    scale_color_manual(values = greySelection) +
-    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme_minimal() +
+    scale_color_manual(values = twoGroups) +
+    scale_y_continuous(limits = c(ymin, max(longAll$value))) +
     theme(legend.position="none")
-
 
 }
 
 
 
+pClass <- function(pop, o = FALSE){
+
+  # Sum infections from different classes
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) colSums(apply(pop$I[pop$whichClasses[,x],,], c(2,3) , sum)))
+
+  z2 <- do.call(cbind, z)
+
+  
+  d <- cbind(z2, cumsum(pop$waiting)) %>% data.frame
+  #d <- cbind(d, 'disease')
+  colnames(d) <- c(paste0('p', 1:pop$parameters['nPathogens']),'time')
+
+  s <- data.frame(time = cumsum(pop$waiting), disease = 's', value = colSums(pop$I[1,,]))
+
+  longd <- melt(d, id = 'time' , variable_name = 'disease')
+  
+  
+  longAll <- rbind(longd, s)
+
+  #longAll$colonyState <- paste0(longAll$colony, longAll$state) %>% factor
 
 
+  #twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
+  #twoGroups[grep('disease',names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
+  #names(twoGroups) <- names(table(longAll$colonyState))
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longAll$value)
+  }
+
+  ggplot(data = longAll,
+       aes(x = time, y = value, colour = disease)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() +
+    scale_y_continuous(limits = c(ymin, max(longAll$value))) +
+    theme(legend.position="none")
+  
+
+}
 
 
 

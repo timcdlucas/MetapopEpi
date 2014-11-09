@@ -7,7 +7,7 @@
 #'@name MetapopEpi
 #'@author Tim CD Lucas
 #'@docType package
-#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape
+#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape2 compiler
 
 NULL
 
@@ -202,7 +202,73 @@ seedPathogen <- function(pop, pathogens = 1, n = 1){
 		# keep pop size constant
 		pop$I[1, r, 1] <- pop$I[1, r, 1] - n
 	}
+  pop <- transRates(pop, 1)
+
 	return(pop)
+}
+
+
+#' Perform a random event
+#' 
+#' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
+#'@param pop A population object
+#'@param t Time step. Note the population should be AT time t, going to t+1.
+#'@name randEvent 
+
+randEvent <- cmpfun(function(pop, t){
+  # Calculate random number each time. Expect, precalcing randUnifs might be quicker.
+  # event <- sample(1:nrow(pop$transitions), size = 1, prob = pop$transitions$rate)
+
+  # Using precalcuated random uniforms in [0,1], pop$randEventU
+  # Find which interval this falls in as quick way to select value
+  # Should have a think about open and closed intervalsfromClass toColony toClass rate
+
+  event <- pop$transitions[findInterval(pop$randEventU[t]*pop$totalRate, cumsum(c(0, pop$transitions$rate))), ]
+
+  # Copy pop to t + 1
+  pop$I[, , t + 1] <- pop$I[, , t]
+  
+  # run event
+  pop$I[event[['fromClass']], event[['fromColony']], t + 1] <- pop$I[event[['fromClass']], event[['fromColony']], t ] - 1
+  pop$I[event[['toClass']], event[['toColony']], t + 1] <- pop$I[event[['toClass']], event[['toColony']], t] + 1
+
+  pop <- transRates(pop, t + 1)
+  
+  pop <- waitingTime(pop, t)
+
+  return(pop)
+})
+
+
+  
+
+#' Run simulation up to certain event number
+#'
+#' Each time step, pick a random event and perform that event.
+
+#'@export
+#'@name runSim
+#'@inheritParams randEvent
+#'@param t The event number to run the simulation until.
+
+runSim <- function(pop, time = 'end'){
+
+  assert_that(is.count(time) | time == 'end')
+
+  if (time == 'end'){
+    time <- pop$parameters['events']
+  }
+  
+
+  pb <- txtProgressBar(1, pop$parameters['events'], style = 3)
+    
+  for (t in 1:pop$parameters['events']){
+    pop <- randEvent(pop, t)
+    setTxtProgressBar(pb, t)
+  }
+
+  close(pb)
+  return(pop)
 }
 
 ###############################################################################
@@ -234,36 +300,7 @@ waitingTime <- function(pop, t){
   return(pop)
 }
 
-#' Perform a random event
-#' 
-#' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
-#'@param pop A population object
-#'@param t Time step. Note the population should be AT time t, going to t+1.
-#'@name randEvent 
 
-randEvent <- function(pop, t){
-  # Calculate random number each time. Expect, precalcing randUnifs might be quicker.
-  # event <- sample(1:nrow(pop$transitions), size = 1, prob = pop$transitions$rate)
-
-  # Using precalcuated random uniforms in [0,1], pop$randEventU
-  # Find which interval this falls in as quick way to select value
-  # Should have a think about open and closed intervalsfromClass toColony toClass rate
-
-  event <- pop$transitions[findInterval(pop$randEventU[t]*pop$totalRate, cumsum(c(0, pop$transitions$rate))), ]
-
-  # Copy pop to t + 1
-  pop$I[, , t + 1] <- pop$I[, , t]
-  
-  # run event
-  pop$I[event[['fromClass']], event[['fromColony']], t + 1] <- pop$I[event[['fromClass']], event[['fromColony']], t ] - 1
-  pop$I[event[['toClass']], event[['toColony']], t + 1] <- pop$I[event[['toClass']], event[['toColony']], t] + 1
-
-  pop <- transRates(pop, t + 1)
-  
-  pop <- waitingTime(pop, t)
-
-  return(pop)
-}
 
 
 
@@ -279,14 +316,16 @@ transRates <- function(pop, t){
 	#distinctTrans <- nColonies + nColonies*pop$nClasses + coinfectionTrans +nColonies*(nColonies-1)*pop$nClasses
 	infectTrans <- infectionTrans(pop)
 
+  if(t == 1){
+	  transitions <- rbind(
+				  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
+				  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
+				  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
+				  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
+				  )
+  }
 
-	transitions <- rbind(
-				data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
-				data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
-				data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
-				data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
-				)
-  transitions$rate <- c(birthR(pop,t), deathR(pop,t),  rep(0,pop$parameters['nColonies']*length(infectTrans[,1])) , dispersalR(pop,t))
+  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  rep(0,pop$parameters['nColonies']*length(infectTrans[,1])) , dispersalR(pop, t))
 
   pop$transitions <- transitions
 
@@ -310,7 +349,7 @@ transRates <- function(pop, t){
 #'@family initialRates
 #' 
 birthR <- function(pop, t){ 
-  return(pop$parameters['birth']*(pop$I[1,,t] + colSums(pop$I[,,t])) )
+  return(pop$parameters['birth']*colSums(pop$I[,,t]) )
 }
 
 
@@ -326,7 +365,6 @@ deathR <- function(pop, t){
   return(as.vector(apply(pop$I[,,t], 1, function(x) x*pop$parameters['death'] )))
 }
 
-		
 #' Calculate dispersal rates for each colony.
 #'
 #' Calculate starting dispersal rate for each colony. Later functions recalculate relevant rates after an event.
