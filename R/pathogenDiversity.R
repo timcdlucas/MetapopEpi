@@ -294,7 +294,8 @@ sumI <- function(pop, t){
 #'   As population now has 
 #'
 #'@param randU Numeric in [0,1]. Typically this will a random uniform number. 
-# @tim Need rewriting. Yup, totally wrong.
+#'@name waitingTime
+
 waitingTime <- function(pop, t){
   pop$waiting[t + 1] <- log(1 - pop$randU[t])/(-pop$totalRate)
   return(pop)
@@ -304,7 +305,15 @@ waitingTime <- function(pop, t){
 
 
 
-# Calc new transition rates.
+
+#' Calculate new transition rates.
+#'
+#'
+#'@inheritParams sumI
+#'@name transRates
+#'@family initialRates
+#' 
+
 
 transRates <- function(pop, t){
 
@@ -312,8 +321,7 @@ transRates <- function(pop, t){
 	# How many coinfection transitions
 	coinfectionTrans <- sum(sapply(0:pop$parameters['nPathogens'], function(k) choose(pop$parameters['nPathogens'], k)*(pop$parameters['nPathogens']-k) ) )
 
-	# How many total transitions
-	#distinctTrans <- nColonies + nColonies*pop$nClasses + coinfectionTrans +nColonies*(nColonies-1)*pop$nClasses
+  # Infection from which class to which class.
 	infectTrans <- infectionTrans(pop)
 
   if(t == 1){
@@ -362,7 +370,7 @@ birthR <- function(pop, t){
 #'@family initialRates
 #' 
 deathR <- function(pop, t){
-  return(as.vector(apply(pop$I[,,t], 1, function(x) x*pop$parameters['death'] )))
+  return(as.vector(apply(pop$I[,, t], 1, function(x) x*pop$parameters['death'] )))
 }
 
 #' Calculate dispersal rates for each colony.
@@ -373,8 +381,48 @@ deathR <- function(pop, t){
 #'@name dispersalR
 #'@family initialRates
 #' 
-dispersalR <- function(pop,t){
-  return(pop$parameters['dispersal']*as.vector(t(pop$I[,pop$edgeList[,1],t])*pop$adjacency[pop$edgeList]))
+dispersalR <- function(pop, t){
+  return(pop$parameters['dispersal']*as.vector(t(pop$I[, pop$edgeList[,1], t])*pop$adjacency[pop$edgeList]))
+}
+
+
+#' Calculate infection rates for each colony.
+#'
+#'
+#'@inheritParams sumI
+#'@name infectionR
+#'@family initialRates
+#'@return nColonies * nPathogens vector Grouped by pathogen
+#' 
+
+infectionR <- function(pop, t, infectTrans){
+  return(as.vector(sapply(1:pop$parameters['nPathogens'], 
+    function(rho) pop$parameters['transmission']*pop$I[1, , t] * colSums(pop$I[pop$whichClasses[, rho], , t]))))
+}
+
+#' Calculate coinfection rates for each colony.
+#'
+#'
+#'@inheritParams sumI
+#'@name coinfectionR
+#'@family initialRates
+#'@return nColonies * something. Grouped by to class, then from class
+#' 
+coinfectionR <- function(pop, t){
+
+  # rate is alpha * beta * fromClass * sumAdditional
+
+  toClass <- infectTrans[(pop$parameters['nPathogens'] + 1):(pop$nClasses + pop$parameters['nPathogens'] + 1), 2]
+
+  pop$I[toClass, , t]
+
+
+
+
+  pop$I[, , t]
+
+  return(as.vector(sapply(1:pop$parameters['nPathogens'], 
+    function(rho) pop$parameters['transmission'] * pop$I[1, , t] * colSums(pop$I[pop$whichClasses[,rho], , t]))))
 }
 
 

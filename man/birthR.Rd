@@ -14,7 +14,9 @@ birthR(pop, t)
 Calculate starting birth rate for each colony. Later functions recalculate relevant rates after an event.
 }
 \seealso{
-Other initialRates: \code{\link{deathR}};
-  \code{\link{dispersalR}}; \code{\link{infectionTrans}}
+Other initialRates: \code{\link{coinfectionR}};
+  \code{\link{deathR}}; \code{\link{dispersalR}};
+  \code{\link{infectionR}}; \code{\link{infectionTrans}};
+  \code{\link{transRates}}
 }
 
