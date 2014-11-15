@@ -19,7 +19,7 @@ Calculate infection rates for each colony.
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{deathR}};
-  \code{\link{dispersalR}}; \code{\link{infectionTrans}};
-  \code{\link{transRates}}
+  \code{\link{dispersalR}}; \code{\link{findDiseaseAdded}};
+  \code{\link{infectionTrans}}; \code{\link{transRates}}
 }
 

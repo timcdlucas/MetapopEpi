@@ -271,3 +271,45 @@ pClass <- function(pop, o = FALSE){
 
 
 
+
+
+#' Plot the total number of infected individuals with each disease
+#'
+#'@inheritParams pSus
+#'@name pDis
+#'@export
+
+
+pDis <- function(pop, o = FALSE){
+  
+  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$I[pop$whichClasses[,p], , ])))
+
+  I <- do.call(cbind, I)
+
+  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  colnames(d)[NCOL(d)] <- 'time'
+
+
+  greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nPathogens']))
+
+  longd <- melt(d, id = 'time', variable.name = 'Pathogen')
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  ggplot(data = longd,
+       aes(x = time, y = value, colour = Pathogen)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() +
+    scale_color_manual(values = greySelection) +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme(legend.position="none")
+
+}
+
+
+

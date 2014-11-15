@@ -3,6 +3,7 @@
 export(makePop)
 export(netDegree)
 export(netStrength)
+export(pDis)
 export(pInf)
 export(pPop)
 export(pSus)

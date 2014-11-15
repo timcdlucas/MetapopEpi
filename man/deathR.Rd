@@ -16,7 +16,7 @@ Calculate starting death rate for each colony. Later functions recalculate relev
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{dispersalR}};
-  \code{\link{infectionR}}; \code{\link{infectionTrans}};
-  \code{\link{transRates}}
+  \code{\link{findDiseaseAdded}}; \code{\link{infectionR}};
+  \code{\link{infectionTrans}}; \code{\link{transRates}}
 }
 

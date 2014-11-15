@@ -11,7 +11,7 @@ coinfectionR(pop, t)
 \item{t}{Time. An integer giving the event number (i.e. the 1000th event).}
 }
 \value{
-nColonies * 2*n - n - 1 (i.e. no of coinfected classed)
+nColonies * something. Grouped by to class, then from class
 }
 \description{
 Calculate coinfection rates for each colony.
@@ -19,7 +19,7 @@ Calculate coinfection rates for each colony.
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{deathR}}; \code{\link{dispersalR}};
-  \code{\link{infectionR}}; \code{\link{infectionTrans}};
-  \code{\link{transRates}}
+  \code{\link{findDiseaseAdded}}; \code{\link{infectionR}};
+  \code{\link{infectionTrans}}; \code{\link{transRates}}
 }
 

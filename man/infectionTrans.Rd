@@ -14,7 +14,7 @@ Find possible possible infection transitions.
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{deathR}};
-  \code{\link{dispersalR}}; \code{\link{infectionR}};
-  \code{\link{transRates}}
+  \code{\link{dispersalR}}; \code{\link{findDiseaseAdded}};
+  \code{\link{infectionR}}; \code{\link{transRates}}
 }
 

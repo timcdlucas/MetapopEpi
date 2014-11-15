@@ -16,7 +16,7 @@ Calculate starting dispersal rate for each colony. Later functions recalculate r
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{deathR}};
-  \code{\link{infectionR}}; \code{\link{infectionTrans}};
-  \code{\link{transRates}}
+  \code{\link{findDiseaseAdded}}; \code{\link{infectionR}};
+  \code{\link{infectionTrans}}; \code{\link{transRates}}
 }
 
