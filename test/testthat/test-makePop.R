@@ -3,11 +3,10 @@ context('Test makePop function that initializes populations.')
 test_that('makePop creates correct data types', {
   p <- makePop()
 
-  expect_equal(length(p), 15)
+  expect_equal(length(p), 16)
   expect_true(inherits(p$parameters, 'numeric'))
   expect_true(inherits(p$models, 'data.frame'))
   expect_true(inherits(p$I, 'array'))
-  expect_true(inherits(p$S, 'matrix'))
   expect_true(inherits(p$edgeList, 'matrix'))
   expect_true(inherits(p$diseaseList, 'list'))
   expect_true(inherits(p$nClasses, 'integer'))
@@ -24,18 +23,15 @@ test_that('makePop creates correct data types', {
 test_that('makePop creates correctly sized arrays for S and I', {
   p1 <- makePop(nColonies = 10, nPathogens = 5, events = 20)
 
-  
-  expect_true(all.equal(dim(p1$S), c(10, 20)))
-  expect_true(all.equal(dim(p1$I), c(2^5, 10, 20)))
+  expect_true(all.equal(dim(p1$I), c(2^5, 10, 20 + 1)))
 
   # Currently nColonies = 1 crashes. Wasn't deliberate but is probably a good choice.
   expect_error(makePop(nColonies = 1, nPathogens = 5, events = 20))
 
 
-  # nPathogens = 1
-  p2 <- makePop(nColonies = 10, nPathogens = 1, events = 20)
-  expect_true(all.equal(dim(p2$S), c(10, 20)))
-  expect_true(all.equal(dim(p2$I), c(2^1, 10, 20)))  
+  # nPathogens must be > 1 as well
+  expect_error(makePop(nColonies = 10, nPathogens = 1, events = 20))
+
 
 })
 

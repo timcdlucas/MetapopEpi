@@ -75,7 +75,10 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 	# Some more assertions
 	is.count(nColonies)
 	is.count(events)
+  assert_that(events > 0)
 	is.count(nPathogens)
+  assert_that(nPathogens > 1)
+  assert_that(nColonies > 1)
 	assert_that(is.numeric(space), length(space)==1)
 	assert_that(is.numeric(maxDistance), length(maxDistance)==1)
 
@@ -436,7 +439,7 @@ coinfectionR <- cmpfun(function(pop, t){
 #'@family initialRates
 #' 
 infectionTrans <- function(pop){
-  transMatr <- matrix(0, ncol=pop$nClasses, nrow=pop$nClasses)                 
+  transMatr <- matrix(0, ncol = pop$nClasses, nrow = pop$nClasses)                 
   for(i in 1:pop$nClasses){
     for(j in 1:pop$nClasses){
       setDiff <- length(setdiff(pop$diseaseList[[j]], pop$diseaseList[[i]]))==1
@@ -444,7 +447,7 @@ infectionTrans <- function(pop){
       if(setDiff & increasing){transMatr[i,j] <- 1 }
     }
   } 
-  return(which(transMatr==1, arr.ind=TRUE))
+  return(which(transMatr == 1, arr.ind = TRUE))
 }
 
 
