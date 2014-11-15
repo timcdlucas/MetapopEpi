@@ -147,6 +147,10 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 	# So all infectives of disease 2 would be sum(pop$I[whichClasses[,2], , t]) or something.
 	pop$whichClasses <- sapply(1:nPathogens, function(x) grep(x, pop$diseaseClasses))
 	pop$nClasses <- length(pop$diseaseClasses)
+
+  # A list of which disease is added in order to reach new class
+  #   for all coinfection rows in pop$transitions
+  pop$diseaseAdded <- findDiseaseAdded(pop)
 	
 	pop$I <- array(0, dim=c(pop$nClasses, nColonies, events + 1), dimnames=c('pathogen', 'colony', 'events'))
 	
@@ -331,9 +335,11 @@ transRates <- function(pop, t){
 				  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
 				  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
 				  )
+  } else {
+    transitions <- pop$transitions
   }
 
-  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  rep(0,pop$parameters['nColonies']*length(infectTrans[,1])) , dispersalR(pop, t))
+  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t) , dispersalR(pop, t))
 
   pop$transitions <- transitions
 
@@ -408,22 +414,17 @@ infectionR <- function(pop, t, infectTrans){
 #'@family initialRates
 #'@return nColonies * something. Grouped by to class, then from class
 #' 
-coinfectionR <- function(pop, t){
+
+
+coinfectionR <- cmpfun(function(pop, t){
+
+  coinfectionTrans <- pop$transitions[pop$transitions$type == 'infection' & pop$transitions$toClass > (pop$parameters['nPathogens'] + 1), ]
 
   # rate is alpha * beta * fromClass * sumAdditional
+  sumAdditions <- sapply(1:length(pop$diseaseAdded), function(i) sum(pop$I[pop$whichClasses[, pop$diseaseAdded[i]], coinfectionTrans$fromColony[i], t]))
 
-  toClass <- infectTrans[(pop$parameters['nPathogens'] + 1):(pop$nClasses + pop$parameters['nPathogens'] + 1), 2]
-
-  pop$I[toClass, , t]
-
-
-
-
-  pop$I[, , t]
-
-  return(as.vector(sapply(1:pop$parameters['nPathogens'], 
-    function(rho) pop$parameters['transmission'] * pop$I[1, , t] * colSums(pop$I[pop$whichClasses[,rho], , t]))))
-}
+  rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
+})
 
 
 
@@ -444,6 +445,30 @@ infectionTrans <- function(pop){
     }
   } 
   return(which(transMatr==1, arr.ind=TRUE))
+}
+
+
+#' Make vector of which disease is added for each coinfection transitions in pop$transitions
+#'
+#'
+#'@inheritParams sumI
+#'@name findDiseaseAdded
+#'@family initialRates
+#' 
+findDiseaseAdded <- function(pop){
+  infectTrans <- infectionTrans(pop)
+  toClass <- infectTrans[(pop$parameters['nPathogens'] + 1):(pop$nClasses + pop$parameters['nPathogens'] + 1), 2]
+
+
+  infectionTransitions <- data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA)
+
+  to <- infectionTransitions$toClass[infectionTransitions$type == 'infection']
+  coinfectionTo <- to[to > pop$parameters['nPathogens'] + 1]
+
+  from <- infectionTransitions$fromClass[infectionTransitions$type == 'infection']
+  coinfectionFrom <- from[from > 1]
+
+  diseaseAdded <- apply(cbind(coinfectionFrom, coinfectionTo), 1, function(r) pop$diseaseList[[r[2]]][!pop$diseaseList[[r[2]]] %in% pop$diseaseList[[r[1]]]])
 }
 
 
