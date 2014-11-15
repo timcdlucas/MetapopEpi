@@ -79,7 +79,7 @@ pSus <- function(pop, o = FALSE){
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
+  longd <- melt(d, id = 'time', variable.name = 'Colony')
 
   
   if(o){
@@ -116,7 +116,7 @@ pInf <- function(pop, o = FALSE){
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
+  longd <- melt(d, id = 'time', variable.name = 'Colony')
 
   if(o){
     ymin <- 0
@@ -158,7 +158,7 @@ pPop <- function(pop, o = FALSE){
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
-  longd <- melt(d, id = 'time', variable_name = 'Colony')
+  longd <- melt(d, id = 'time', variable.name = 'Colony')
 
 
   if(o){
@@ -195,8 +195,8 @@ pAll <- function(pop, o = FALSE){
   s <- cbind(s, 'susceptible')
   colnames(s)[c(NCOL(s)-1, NCOL(s))] <- c('time', 'state')
 
-  longd <- melt(d, id = c('time', 'state') , variable_name = 'colony')
-  longs <- melt(s, id = c('time', 'state') , variable_name = 'colony')
+  longd <- melt(d, id = c('time', 'state') , variable.name = 'colony')
+  longs <- melt(s, id = c('time', 'state') , variable.name = 'colony')
   
   longAll <- rbind(longd, longs)
 
@@ -240,7 +240,7 @@ pClass <- function(pop, o = FALSE){
 
   s <- data.frame(time = cumsum(pop$waiting), disease = 's', value = colSums(pop$I[1,,]))
 
-  longd <- melt(d, id = 'time' , variable_name = 'disease')
+  longd <- melt(d, id = 'time' , variable.name = 'disease')
   
   
   longAll <- rbind(longd, s)
