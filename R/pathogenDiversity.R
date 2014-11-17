@@ -222,7 +222,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1){
 #'@param t Time step. Note the population should be AT time t, going to t+1.
 #'@name randEvent 
 
-randEvent <- cmpfun(function(pop, t){
+randEvent <- function(pop, t){
   # Calculate random number each time. Expect, precalcing randUnifs might be quicker.
   # event <- sample(1:nrow(pop$transitions), size = 1, prob = pop$transitions$rate)
 
@@ -244,7 +244,7 @@ randEvent <- cmpfun(function(pop, t){
   pop <- waitingTime(pop, t)
 
   return(pop)
-})
+}
 
 
   
@@ -319,19 +319,23 @@ waitingTime <- function(pop, t){
 #'@inheritParams sumI
 #'@name transRates
 #'@family initialRates
-#' 
+#'@export 
 
 
 transRates <- function(pop, t){
 
-	# Make element that stores transition probabilities
-	# How many coinfection transitions
-	coinfectionTrans <- sum(sapply(0:pop$parameters['nPathogens'], function(k) choose(pop$parameters['nPathogens'], k)*(pop$parameters['nPathogens']-k) ) )
+
 
   # Infection from which class to which class.
-	infectTrans <- infectionTrans(pop)
+
 
   if(t == 1){
+
+	  # Make element that stores transition probabilities
+	  # How many coinfection transitions
+	  coinfectionTrans <- sum(sapply(0:pop$parameters['nPathogens'], function(k) choose(pop$parameters['nPathogens'], k)*(pop$parameters['nPathogens']-k) ) )
+    infectTrans <- infectionTrans(pop)
+
 	  transitions <- rbind(
 				  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
 				  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
@@ -419,7 +423,7 @@ infectionR <- function(pop, t, infectTrans){
 #' 
 
 
-coinfectionR <- cmpfun(function(pop, t){
+coinfectionR <- function(pop, t){
 
   coinfectionTrans <- pop$transitions[pop$transitions$type == 'infection' & pop$transitions$toClass > (pop$parameters['nPathogens'] + 1), ]
 
@@ -427,7 +431,7 @@ coinfectionR <- cmpfun(function(pop, t){
   sumAdditions <- sapply(1:length(pop$diseaseAdded), function(i) sum(pop$I[pop$whichClasses[, pop$diseaseAdded[i]], coinfectionTrans$fromColony[i], t]))
 
   rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
-})
+}
 
 
 

@@ -38,6 +38,7 @@ plotColonyNet <- function(pop, lwd=2){
 #'@name plotColonyNet
 #'@family viz 
 
+
 colonyHeat <- function(weightMatrix){
 	heatmap(weightMatrix,  scale="none",lwd=3, labRow='', labCol='',  
 		col=colorRampPalette(brewer.pal(9,"YlOrRd"))(256))
@@ -179,6 +180,14 @@ pPop <- function(pop, o = FALSE){
 }
 
 
+
+#' Plot something...
+#'
+#'@inheritParams pSus
+#'@name pAll
+#'@export
+
+
 pAll <- function(pop, o = FALSE){
 
   # Sum infections from different classes
@@ -225,6 +234,11 @@ pAll <- function(pop, o = FALSE){
 }
 
 
+#' Plot the total number of individuals in each disease class
+#'
+#'@inheritParams pSus
+#'@name pClass
+#'@export
 
 pClass <- function(pop, o = FALSE){
 
@@ -311,5 +325,35 @@ pDis <- function(pop, o = FALSE){
 
 }
 
+
+
+#' Plot the total number of infected individuals and total Susceptible.
+#'
+#'@inheritParams pSus
+#'@name pDis
+#'@export
+
+pSI <- function(pop, o = FALSE){
+  
+  I <- cbind(apply(pop$I[-1, , ], 3, sum), apply(pop$I[1, , ], 2, sum), cumsum(pop$waiting)) %>% data.frame
+  colnames(I) <- c('I', 'S', 'time')
+
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  longd <- melt(I, id = 'time', variable.name = 'SI_class')
+
+  ggplot(data = longd,
+       aes(x = time, y = value, colour = SI_class)) +
+    geom_line() +
+    ylab('Individuals') + 
+    theme_minimal() +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    theme(legend.position="none")
+
+}
 
 

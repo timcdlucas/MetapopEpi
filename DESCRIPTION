@@ -12,5 +12,6 @@ Imports:
     RColorBrewer,
     magrittr,
     igraph,
-    reshape
+    reshape,
+    compiler
 VignetteBuilder: knitr
