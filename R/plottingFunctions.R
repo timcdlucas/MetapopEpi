@@ -330,7 +330,7 @@ pDis <- function(pop, o = FALSE){
 #' Plot the total number of infected individuals and total Susceptible.
 #'
 #'@inheritParams pSus
-#'@name pDis
+#'@name pSI
 #'@export
 
 pSI <- function(pop, o = FALSE){

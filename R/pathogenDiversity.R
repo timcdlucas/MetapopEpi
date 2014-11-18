@@ -155,7 +155,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
   #   for all coinfection rows in pop$transitions
   pop$diseaseAdded <- findDiseaseAdded(pop)
 	
-	pop$I <- array(0, dim=c(pop$nClasses, nColonies, events + 1), dimnames=c('pathogen', 'colony', 'events'))
+	pop$I <- array(0, dim = c(pop$nClasses, nColonies, events + 1), dimnames = c('pathogen', 'colony', 'events'))
 	
 	# Create colony sizes based on model in colonyDistr
 	pop$I[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
@@ -428,7 +428,7 @@ coinfectionR <- function(pop, t){
   coinfectionTrans <- pop$transitions[pop$transitions$type == 'infection' & pop$transitions$toClass > (pop$parameters['nPathogens'] + 1), ]
 
   # rate is alpha * beta * fromClass * sumAdditional
-  sumAdditions <- sapply(1:length(pop$diseaseAdded), function(i) sum(pop$I[pop$whichClasses[, pop$diseaseAdded[i]], coinfectionTrans$fromColony[i], t]))
+  sumAdditions <- colSums(pop$I[pop$whichClasses[, pop$diseaseAdded[1:length(pop$diseaseAdded)]], coinfectionTrans$fromColony[1:length(pop$diseaseAdded)], t])
 
   rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
 }
