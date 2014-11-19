@@ -240,19 +240,23 @@ pAll <- function(pop, o = FALSE){
 #'@name pClass
 #'@export
 
-pClass <- function(pop, o = FALSE){
+pClass <- function(pop, start = 1, end = NULL, o = FALSE){
+  
+  if(is.null(end)){
+    end <- pop$parameters['events']
+  }
 
   # Sum infections from different classes
-  z <- lapply(1:pop$parameters['nPathogens'], function(x) colSums(apply(pop$I[pop$whichClasses[,x],,], c(2,3) , sum)))
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) colSums(apply(pop$I[pop$whichClasses[,x], , start:end], c(2,3) , sum)))
 
   z2 <- do.call(cbind, z)
 
   
-  d <- cbind(z2, cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(z2, cumsum(pop$waiting[start:end])) %>% data.frame
   #d <- cbind(d, 'disease')
-  colnames(d) <- c(paste0('p', 1:pop$parameters['nPathogens']),'time')
+  colnames(d) <- c(paste0('p', 1:pop$parameters['nPathogens']), 'time')
 
-  s <- data.frame(time = cumsum(pop$waiting), disease = 's', value = colSums(pop$I[1,,]))
+  s <- data.frame(time = cumsum(pop$waiting[start:end]), disease = 's', value = colSums(pop$I[1, , start:end]))
 
   longd <- melt(d, id = 'time' , variable.name = 'disease')
   
@@ -294,13 +298,16 @@ pClass <- function(pop, o = FALSE){
 #'@export
 
 
-pDis <- function(pop, o = FALSE){
+pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   
-  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$I[pop$whichClasses[,p], , ])))
+  if(is.null(end)){
+    end <- pop$parameters['events']
+  }
+  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$I[pop$whichClasses[,p], , start:end])))
 
   I <- do.call(cbind, I)
 
-  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(I, cumsum(pop$waiting[start:end])) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
