@@ -326,9 +326,7 @@ transRates <- function(pop, t){
 
   # Infection from which class to which class.
 
-  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
-
-  pop$transitions <- transitions
+  pop$transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
 
   # Reculculate total rate.
   pop$totalRate <- sum(pop$transitions$rate)			
@@ -438,6 +436,7 @@ coinfectionR <- function(pop, t){
   sumAdditions <- colSums(pop$I[pop$whichClasses[, pop$diseaseAdded[1:length(pop$diseaseAdded)]], coinfectionTrans$fromColony[1:length(pop$diseaseAdded)], t])
 
   rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
+  return(rate)
 }
 
 
