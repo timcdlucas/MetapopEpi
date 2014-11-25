@@ -160,7 +160,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 	# Create colony sizes based on model in colonyDistr
 	pop$I[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
-
+  pop <- initTransitions(pop)
 	pop <- transRates(pop, 1)
 
   # Make vector for waiting times.
@@ -324,29 +324,9 @@ waitingTime <- function(pop, t){
 
 transRates <- function(pop, t){
 
-
-
   # Infection from which class to which class.
 
-
-  if(t == 1){
-
-	  # Make element that stores transition probabilities
-	  # How many coinfection transitions
-	  coinfectionTrans <- sum(sapply(0:pop$parameters['nPathogens'], function(k) choose(pop$parameters['nPathogens'], k)*(pop$parameters['nPathogens']-k) ) )
-    infectTrans <- infectionTrans(pop)
-
-	  transitions <- rbind(
-				  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
-				  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
-				  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
-				  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
-				  )
-  } else {
-    transitions <- pop$transitions
-  }
-
-  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t) , dispersalR(pop, t))
+  transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
 
   pop$transitions <- transitions
 
@@ -356,6 +336,33 @@ transRates <- function(pop, t){
 }
 
 
+
+
+#' Build the transition data.frame which will have rates populated later.
+#'
+#'
+#'@inheritParams sumI
+#'@name initTransitions
+#'@family initialRates
+#'@export 
+
+
+
+initTransitions <- function(pop){
+ 
+  coinfectionTrans <- sum(sapply(0:pop$parameters['nPathogens'], function(k) choose(pop$parameters['nPathogens'], k)*(pop$parameters['nPathogens']-k) ) )
+  infectTrans <- infectionTrans(pop)
+
+  pop$transitions <- rbind(
+			  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
+			  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
+			  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
+			  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
+			  )
+  return(pop)
+}
+  
+  
 
 #####################################################################################################################
 
