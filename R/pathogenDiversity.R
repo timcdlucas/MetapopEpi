@@ -288,6 +288,7 @@ runSim <- function(pop, time = 'end'){
 #'@inheritParams seedPathogen
 #'@param t Time. An integer giving the event number (i.e. the 1000th event).
 #'@name sumI
+
 sumI <- function(pop, t){
 	return(sapply(1:pop$parameters['nPathogens'], function(x) colSums(pop$I[pop$whichClasses[,x],,t])))
 }
