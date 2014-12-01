@@ -115,7 +115,7 @@ test_that('transRates works', {
 
   pop3$I[, , 1] <- c(1:16)
 
-  pop4 <- transRatespop3, 1)
+  pop4 <- transRates(pop3, 1)
 
   # Dispersal, population * dispersal rate
   expect_true(all(pop4$transitions$rate[pop4$transitions$type == 'dispersal' & pop4$transitions$fromColony == 1] == 1:8 * 2))
@@ -132,10 +132,57 @@ test_that('transRates works', {
   expect_true(all(pop4$transitions$rate[pop4$transitions$type == 'death' & pop4$transitions$fromColony == 2] == 9:16 * 4))
   
 
-  expect_true(all(pop4$transitions$rate[pop4$transitions$type == 'dispersal' & pop4$transitions$fromColony == 2] == 9:16 * 2))
+  pop5 <- makePop(nColonies = 2, nPathogens = 3, transmission = 1, crossImmunity = 1, meanColonySize = 1)
+
+  pop6 <- pop5
+  pop6$I[1:2, 1, 1] <- 1
+
+  pop6Trans <- transRates(pop6, 1)
+
+  inf <- pop6Trans$transitions$rate[pop6Trans$transitions$fromClass == 1 & pop6Trans$transitions$toClass == 2 & pop6Trans$transitions$toColony == 1 ] 
+  inf <- inf[!is.na(inf)]
 
 
-  pop4$transitions$rate
+  expect_equal( inf, 1 * 1 * 1 )
+
+
+  # Check other classes get added properly.
+  pop7 <- pop5
+  pop7$I[c(1:2, 5), 1, 1] <- 1
+
+  pop7Trans <- transRates(pop7, 1)
+
+  inf <- pop7Trans$transitions$rate[pop7Trans$transitions$fromClass == 1 & pop7Trans$transitions$toClass == 2 & pop7Trans$transitions$toColony == 1 ] 
+  inf <- inf[!is.na(inf)]
+
+
+  expect_equal( inf, 2 * 1 * 1 )
+
+  
+  # coinfection
+  pop8 <- pop5
+  pop8$I[c(1:3), 1, 1] <- c(0, 1, 1)x
+
+  pop8Trans <- transRates(pop8, 1)
+
+  pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 2 & pop8Trans$transitions$toClass == 6 & pop8Trans$transitions$toColony == 1 ] 
+  inf <- inf[!is.na(inf)]
+
+
+  expect_equal( inf, 1 * 1 * 1 )
+  
+  # check coinfection  adds properly
+  pop8 <- pop5
+  pop8$I[c(2, 3), 1, 1] <- 1
+
+  pop8Trans <- transRates(pop8, 1)
+
+  inf <- pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 1 & pop8Trans$transitions$toClass == 2 & pop8Trans$transitions$toColony == 1 ] 
+  inf <- inf[!is.na(inf)]
+
+
+  expect_equal( inf, 1 * 1 * 1 )
+
 
 })
 

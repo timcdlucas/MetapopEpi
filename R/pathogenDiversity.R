@@ -434,7 +434,7 @@ coinfectionR <- function(pop, t){
   coinfectionTrans <- pop$transitions[pop$transitions$type == 'infection' & pop$transitions$toClass > (pop$parameters['nPathogens'] + 1), ]
 
   # rate is alpha * beta * fromClass * sumAdditional
-  sumAdditions <- colSums(pop$I[pop$whichClasses[, pop$diseaseAdded[1:length(pop$diseaseAdded)]], coinfectionTrans$fromColony[1:length(pop$diseaseAdded)], t])
+  sumAdditions <- sapply(1:length(pop$diseaseAdded), function(i) sum(pop$I[pop$whichClasses[, pop$diseaseAdded[i]], coinfectionTrans$fromColony[i], t]))
 
   rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
   return(rate)
@@ -470,18 +470,24 @@ infectionTrans <- function(pop){
 #'@family initialRates
 #' 
 findDiseaseAdded <- function(pop){
+
+  # What are the possible transitions (col 1 from, col 2 to class.)
   infectTrans <- infectionTrans(pop)
-  toClass <- infectTrans[(pop$parameters['nPathogens'] + 1):(pop$nClasses + pop$parameters['nPathogens'] + 1), 2]
 
 
+  # Build the infection bit of pop$transisions  
   infectionTransitions <- data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA)
 
+  # single infection 'to' class
   to <- infectionTransitions$toClass[infectionTransitions$type == 'infection']
+  # just want coinfection 'to' class
   coinfectionTo <- to[to > pop$parameters['nPathogens'] + 1]
 
+  # From classes
   from <- infectionTransitions$fromClass[infectionTransitions$type == 'infection']
   coinfectionFrom <- from[from > 1]
 
+  # which disease is in 
   diseaseAdded <- apply(cbind(coinfectionFrom, coinfectionTo), 1, function(r) pop$diseaseList[[r[2]]][!pop$diseaseList[[r[2]]] %in% pop$diseaseList[[r[1]]]])
 }
 

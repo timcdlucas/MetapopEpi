@@ -15,6 +15,7 @@ Make vector of which disease is added for each coinfection transitions in pop$tr
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{deathR}};
   \code{\link{dispersalR}}; \code{\link{infectionR}};
-  \code{\link{infectionTrans}}; \code{\link{transRates}}
+  \code{\link{infectionTrans}};
+  \code{\link{initTransitions}}; \code{\link{transRates}}
 }
 

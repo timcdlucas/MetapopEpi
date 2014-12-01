@@ -33,7 +33,18 @@ test_that('makePop creates correctly sized arrays for S and I', {
   expect_error(makePop(nColonies = 10, nPathogens = 1, events = 20))
 
 
+  # nPathogens == 2 should be allowed
+  p2 <- makePop(nPathogens = 2) 
+  expect_true(exists('p2'))
+  expect_equal(p2$nClasses, 4)
+
+
 })
+
+
+
+
+
 
 test_that('incorrect args gives errors', {
   
@@ -76,5 +87,8 @@ test_that('incorrect args gives errors', {
   expect_error(makePop(crossImmunity = 1.1))
 
 })
+
+
+
 
 
