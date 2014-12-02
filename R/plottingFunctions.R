@@ -160,7 +160,7 @@ pPop <- function(pop, o = FALSE){
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
   longd <- melt(d, id = 'time', variable.name = 'Colony')
-
+  longd <- longd[longd$value != 0, ]
 
   if(o){
     ymin <- 0
@@ -210,7 +210,7 @@ pAll <- function(pop, o = FALSE){
   longAll <- rbind(longd, longs)
 
   longAll$colonyState <- paste0(longAll$colony, longAll$state) %>% factor
-
+  longAll <- longAll[longAll$value != 0, ]
 
   twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
   twoGroups[grep('disease',names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
@@ -278,13 +278,16 @@ pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALS
     ymin <- min(longd$value)
   }
 
+  cols <- brewer.pal(8, 'Dark2')
+
   ggplot(data = longd,
-       aes(x = time, y = value, group = disease, colour = nPath)) +
+       aes(x = time, y = value, group = disease, colour = factor(nPath))) +
     geom_line() +
     ylab('Individuals') + 
     theme_minimal() +
-    scale_y_continuous(limits = c(ymin, max(longd$value))) 
-  
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    labs(colour = "Coinfection lvl") +
+    scale_color_brewer(palette="Dark2")
 
 }
 
@@ -315,6 +318,8 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nPathogens']))
 
   longd <- melt(d, id = 'time', variable.name = 'Pathogen')
+  longd <- longd[longd$value != 0, ]
+
 
   if(o){
     ymin <- 0
@@ -353,6 +358,7 @@ pSI <- function(pop, o = FALSE){
   }
 
   longd <- melt(I, id = 'time', variable.name = 'SI_class')
+  longd <- longd[longd$value != 0, ]
 
   ggplot(data = longd,
        aes(x = time, y = value, colour = SI_class)) +
