@@ -358,6 +358,9 @@ initTransitions <- function(pop){
 			  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
 			  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
 			  )
+
+
+
   return(pop)
 }
   
@@ -489,6 +492,7 @@ findDiseaseAdded <- function(pop){
 
   # which disease is in 
   diseaseAdded <- apply(cbind(coinfectionFrom, coinfectionTo), 1, function(r) pop$diseaseList[[r[2]]][!pop$diseaseList[[r[2]]] %in% pop$diseaseList[[r[1]]]])
+  return(diseaseAdded)
 }
 
 

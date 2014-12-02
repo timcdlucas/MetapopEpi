@@ -161,15 +161,22 @@ test_that('transRates works', {
   
   # coinfection
   pop8 <- pop5
-  pop8$I[c(1:3), 1, 1] <- c(0, 1, 1)x
+  pop8$I[c(1:3), 1, 1] <- c(0, 1, 1)
 
   pop8Trans <- transRates(pop8, 1)
 
-  pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 2 & pop8Trans$transitions$toClass == 6 & pop8Trans$transitions$toColony == 1 ] 
+  # 1 -> 1 and 2 (i.e. class 2 to class 5)
+  inf <- pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 2 & pop8Trans$transitions$toClass == 5 & pop8Trans$transitions$toColony == 1 ] 
   inf <- inf[!is.na(inf)]
 
+  expect_equal( inf, 1 * 1 * 1 )
+
+  # 2 -> 1 and 2 (i.e. class 3 to class 5)
+  inf <- pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 3 & pop8Trans$transitions$toClass == 5 & pop8Trans$transitions$toColony == 1 ] 
+  inf <- inf[!is.na(inf)]
 
   expect_equal( inf, 1 * 1 * 1 )
+
   
   # check coinfection  adds properly
   pop8 <- pop5
@@ -185,6 +192,136 @@ test_that('transRates works', {
 
 
 })
+
+
+
+test_that('initTransitions works.', {
+
+  p <- makePop(nPathogens = 2, nColonies = 2)
+
+  p <- initTransitions(p)
+
+  expect_true(all(is.na(p$transitions$rate[!p$transitions$type %in% c('death', 'birth')])))
+
+  # transitions should be 1*2 birth, 2^n * 2 = 8 death, 4 * 2 infection, 2^n * 2 dispersal. 
+  # Total = 26
+  expect_equal(NROW(p$transitions), 26)
+  
+  expect_equal(p$transitions$type %>% table %>% as.vector, c(2, 8, 8, 8))
+
+  # Just list the known answers for to and from
+
+  trans1 <- p$transitions[p$transitions$fromColony == 1 & !is.na(p$transitions$fromColony), ] 
+
+
+  # deaths from class 1-4, infection 1->2, 1->3, 2->4, 3->4, dispersal from class 1-4
+  expect_equal(trans1$type, c(rep('death', 4), rep('infection', 4), rep('dispersal', 4)))
+
+  expect_equal(trans1$fromClass, c(1:4, 1, 1, 2, 3, 1:4))
+
+  # toColony. NA for death, 1 for infection, 2 for disperal
+  expect_equal(trans1$toColony, c(rep(NA, 4), rep(1, 4), rep(2, 4)))
+
+  # toClass. NA for death, 2, 3, 4, 4 (see above) then 1:4
+  expect_equal(trans1$toClass, c(rep(NA, 4), 2,3,4,4, 1:4))
+
+
+
+  # Test births seperately.
+  expect_true(p$transitions[p$transitions$type == 'birth', 2:3] %>% is.na %>% all) 
+  expect_equal(p$transitions[p$transitions$type == 'birth', 4:5] %>% unlist(use.names = FALSE), c(1, 2, 1, 1)) 
+  
+
+})
+
+
+
+test_that('All rate calculating functions work.', {
+
+  p <- makePop(nPathogens = 2, nColonies = 2, birth = 1, transmission = 1, death = 1, dispersal = 1, crossImmunity = 1)
+
+  # birthR
+
+  expect_equal(birthR(p, 1), rep(10000, 2))
+
+  # birth w/ 0 pop
+  p$I[1, , 1] <- 0
+  expect_equal(birthR(p, 1), rep(0, 2))
+
+  # check adding
+  p$I[, , 1] <- 1:8
+  expect_equal(birthR(p, 1), c(sum(1:4), sum(5:8)))
+
+
+  #deathR
+  p$I[, , 1] <- 0
+  expect_equal(deathR(p, 1), rep(0, 8))
+
+  p$I[, , 1] <- 1:8 
+  # fromColony is 1, 2, 1, 2. fromClass is 1,1,2,2
+  #   so expect 1:8 by rows.
+  expect_equal(deathR(p, 1), c(1,5,2,6,3,7,4,8) )
+
+  # infectionR
+  p$I[, , 1] <- 0
+  expect_equal(infectionR(p, 1), rep(0, 4))
+
+  p$I[1, , 1] <- 1:2
+  expect_equal(infectionR(p, 1), rep(0, 4))
+
+  p$I[1:2, , 1] <- c(0, 1, 0, 2) # zero susceptibles, infection in both colonies
+  expect_equal(infectionR(p, 1), rep(0, 4))
+
+  # both S and I classes positive.
+  #   fromColony 1, 2, 1, 2. toClass 2, 2, 3, 3
+  p$I[1:2, , 1] <- 1:4
+
+  # So expect +ve infections first, then zero (second pathogen) infections after
+  expect_equal(infectionR(p, 1), c(1*2, 3*4, 0, 0))
+
+  
+  # coinfectionR
+  
+  p$I[, , 1] <- 0
+  expect_equal(coinfectionR(p, 1), rep(0, 4))
+
+  p$I[2, , 1] <- 1:2
+  expect_equal(coinfectionR(p, 1), rep(0, 4))
+
+  p$I[2:3, , 1] <- 1:4
+  expect_equal(coinfectionR(p, 1), c(1*2, 3*4, 1*2, 3*4))
+
+  # check adding
+  p$I[4, 1, 1] <- 1
+  expect_equal(coinfectionR(p, 1), c(1 * (2 + 1), 3 * 4, (1 + 1) * 2, 3 * 4))
+
+}) 
+
+
+
+test_that('findInfectionTrans works', {
+
+  expect_true(all.equal(infectionTrans(makePop(nPathogens = 2)), cbind(c(1,1,2,3), c(2,3,4,4)), check.attributes=FALSE))
+
+  expect_true(all.equal(infectionTrans(makePop(nPathogens = 3)), cbind(c(1,1,1,2,3,2,4,3,4,5,6,7), c(2,3,4,5,5,6,6,7,7,8,8,8)), , check.attributes=FALSE))
+
+})
+
+
+
+
+
+test_that('findDisease added works', {
+
+  # list of which disease is added in rows in p$transitions for coinfection
+  expect_equal(findDiseaseAdded(makePop(nPathogens = 2, nColonies = 2)), c(2,2,1,1))
+  expect_equal(findDiseaseAdded(makePop(nPathogens = 3, nColonies = 2)), c(2,2,3,3,1,1,3,3,1,1,2,2,3,3,))
+
+})
+
+
+
+
 
 
 
