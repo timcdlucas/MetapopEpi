@@ -3,7 +3,7 @@
 \alias{pClass}
 \title{Plot the total number of individuals in each disease class}
 \usage{
-pClass(pop, start = 1, end = NULL, o = FALSE)
+pClass(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE)
 }
 \arguments{
 \item{pop}{A population object}

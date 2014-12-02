@@ -19,7 +19,8 @@ Calculate coinfection rates for each colony.
 \seealso{
 Other initialRates: \code{\link{birthR}};
   \code{\link{deathR}}; \code{\link{dispersalR}};
-  \code{\link{findDiseaseAdded}}; \code{\link{infectionR}};
+  \code{\link{findDiseaseAdded}}; \code{\link{infectionR}},
+  \code{\link{infectionR}}, \code{\link{recoveryR}};
   \code{\link{infectionTrans}};
   \code{\link{initTransitions}}; \code{\link{transRates}}
 }

@@ -45,7 +45,7 @@ NULL
 #'@family Run.sims
 #'@export
 #'@examples 
-#'p <- buildPop()
+#'p <- makePop()
 #'p
 #'
 
@@ -327,8 +327,13 @@ transRates <- function(pop, t){
 
   # Infection from which class to which class.
 
-  pop$transitions$rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
+  rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
 
+  if(pop$models$model == 'SIS'){
+    rate <- c(rate, recoveryR(pop, t))
+  }
+  
+  pop$transitions$rate <- rate
   # Reculculate total rate.
   pop$totalRate <- sum(pop$transitions$rate)			
   return(pop)
@@ -360,7 +365,12 @@ initTransitions <- function(pop){
 			  )
 
 
-
+  if(pop$models$model == 'SIS'){
+    # infection in reverse
+    pop$transitions <- rbind(pop$transitions,
+                             data.frame(type = 'recovery', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), rate = NA)
+    )
+  }
   return(pop)
 }
   
@@ -417,7 +427,7 @@ dispersalR <- function(pop, t){
 #'@return nColonies * nPathogens vector Grouped by pathogen
 #' 
 
-infectionR <- function(pop, t, infectTrans){
+infectionR <- function(pop, t){
   return(as.vector(sapply(1:pop$parameters['nPathogens'], 
     function(rho) pop$parameters['transmission']*pop$I[1, , t] * colSums(pop$I[pop$whichClasses[, rho], , t]))))
 }
@@ -441,6 +451,26 @@ coinfectionR <- function(pop, t){
 
   rate <- pop$parameters['transmission'] * pop$parameters['crossImmunity'] * sumAdditions *   pop$I[cbind(coinfectionTrans$fromClass, coinfectionTrans$fromColony, t)]
   return(rate)
+}
+
+
+
+
+#' Calculate recovery rates for each colony.
+#'
+#'
+#'@inheritParams sumI
+#'@name infectionR
+#'@family initialRates
+#'@return nColonies * nPathogens vector Grouped by pathogen
+#' 
+
+recoveryR <- function(pop, t){
+
+  # Indices (note reversed order of columns)
+  recoveryTrans <- as.matrix(pop$transitions[pop$transitions$type == 'recovery', c(3,2)])
+  curPop <- pop$I[, , t]
+  return(pop$parameters['recovery'] * curPop[recoveryTrans])
 }
 
 

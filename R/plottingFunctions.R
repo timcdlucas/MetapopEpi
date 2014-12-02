@@ -240,49 +240,50 @@ pAll <- function(pop, o = FALSE){
 #'@name pClass
 #'@export
 
-pClass <- function(pop, start = 1, end = NULL, o = FALSE){
+pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE){
   
   if(is.null(end)){
     end <- pop$parameters['events']
   }
 
+  if(S){
+    removeS <- 1:pop$nClasses
+    nClass <- pop$nClasses
+  } else {
+    removeS <- -1
+    nClass <- pop$nClasses - 1
+  }
+
   # Sum infections from different classes
-  z <- lapply(1:pop$parameters['nPathogens'], function(x) colSums(apply(pop$I[pop$whichClasses[,x], , start:end], c(2,3) , sum)))
-
-  z2 <- do.call(cbind, z)
-
+  z <- t(apply(pop$I[removeS, , start:end], c(1,3), sum))
   
-  d <- cbind(z2, cumsum(pop$waiting[start:end])) %>% data.frame
-  #d <- cbind(d, 'disease')
-  colnames(d) <- c(paste0('p', 1:pop$parameters['nPathogens']), 'time')
+  
+  d <- cbind(z, cumsum(pop$waiting[start:end])) %>% data.frame
 
-  s <- data.frame(time = cumsum(pop$waiting[start:end]), disease = 's', value = colSums(pop$I[1, , start:end]))
+  nPaths <- sapply(pop$diseaseList, length)[removeS]
+
+    colnames(d) <- c( 1:(nClass), 'time')
+  
+
 
   longd <- melt(d, id = 'time' , variable.name = 'disease')
+
+  longd$nPath <- nPaths[longd$disease]
+
+  longd <- longd[longd$value != 0, ]
   
-  
-  longAll <- rbind(longd, s)
-
-  #longAll$colonyState <- paste0(longAll$colony, longAll$state) %>% factor
-
-
-  #twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
-  #twoGroups[grep('disease',names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
-  #names(twoGroups) <- names(table(longAll$colonyState))
-
   if(o){
     ymin <- 0
   } else { 
-    ymin <- min(longAll$value)
+    ymin <- min(longd$value)
   }
 
-  ggplot(data = longAll,
-       aes(x = time, y = value, colour = disease)) +
+  ggplot(data = longd,
+       aes(x = time, y = value, group = disease, colour = nPath)) +
     geom_line() +
     ylab('Individuals') + 
     theme_minimal() +
-    scale_y_continuous(limits = c(ymin, max(longAll$value))) +
-    theme(legend.position="none")
+    scale_y_continuous(limits = c(ymin, max(longd$value))) 
   
 
 }

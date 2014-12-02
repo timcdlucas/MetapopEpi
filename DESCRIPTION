@@ -6,12 +6,17 @@ Version: 0.0.1
 Date: 2014-11-02
 Author: Tim CD Lucas
 Maintainer: Tim CD Lucas <timcdlucas@gmail.com>
-Description: 
+Description: A package for running multipathogen, metapopulation epidemiology
+    models.
+License: License file
 Imports:
     assertthat,
     RColorBrewer,
     magrittr,
     igraph,
-    reshape,
-    compiler
+    reshape2,
+    compiler,
+    ggplot2
+Suggests:
+    knitr
 VignetteBuilder: knitr

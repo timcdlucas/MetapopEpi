@@ -54,7 +54,7 @@ Make a new population at time 0. The resultant population object will then conta
   to update the population.
 }
 \examples{
-p <- buildPop()
+p <- makePop()
 p
 }
 

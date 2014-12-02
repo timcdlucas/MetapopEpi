@@ -15,7 +15,8 @@ Build the transition data.frame which will have rates populated later.
 Other initialRates: \code{\link{birthR}};
   \code{\link{coinfectionR}}; \code{\link{deathR}};
   \code{\link{dispersalR}}; \code{\link{findDiseaseAdded}};
-  \code{\link{infectionR}}; \code{\link{infectionTrans}};
+  \code{\link{infectionR}}, \code{\link{infectionR}},
+  \code{\link{recoveryR}}; \code{\link{infectionTrans}};
   \code{\link{transRates}}
 }
 
