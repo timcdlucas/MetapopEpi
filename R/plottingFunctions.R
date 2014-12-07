@@ -74,14 +74,14 @@ popHeat <- function(pop){
 
 pSus <- function(pop, o = FALSE){
   
-  d <- cbind(t(pop$I[1,,]), cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(t(pop$samplde[1,,]), cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
   longd <- melt(d, id = 'time', variable.name = 'Colony')
-
+  longd <- longd[longd$value != 0, ]
   
   if(o){
     ymin <- 0
@@ -109,15 +109,16 @@ pSus <- function(pop, o = FALSE){
 
 pInf <- function(pop, o = FALSE){
   
-  I <- pop$I[2:NROW(pop$I),,] %>% apply(., c(2,3), sum) %>% t
+  I <- pop$sample[2:NROW(pop$sample),,] %>% apply(., c(2,3), sum) %>% t
 
-  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(I, cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
   longd <- melt(d, id = 'time', variable.name = 'Colony')
+  longd <- longd[longd$value != 0, ]
 
   if(o){
     ymin <- 0
@@ -151,9 +152,9 @@ pInf <- function(pop, o = FALSE){
 
 pPop <- function(pop, o = FALSE){
   
-  I <- pop$I %>% apply(., c(2,3), sum) %>% t
+  I <- pop$sample %>% apply(., c(2,3), sum) %>% t
 
-  d <- cbind(I, cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(I, cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -191,16 +192,16 @@ pPop <- function(pop, o = FALSE){
 pAll <- function(pop, o = FALSE){
 
   # Sum infections from different classes
-  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$I[pop$whichClasses[,x],,], c(2,3) , sum))
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$sample[pop$whichClasses[,x],,], c(2,3) , sum))
 
   z2 <- do.call(rbind, z)
 
   
-  d <- cbind(t(z2), cumsum(pop$waiting)) %>% data.frame
+  d <- cbind(t(z2), cumsum(pop$sampleWaiting)) %>% data.frame
   d <- cbind(d, 'disease')
   colnames(d)[c(NCOL(d)-1, NCOL(d))] <- c('time', 'state')
 
-  s <- cbind(t(pop$I[1,,]), cumsum(pop$waiting)) %>% data.frame
+  s <- cbind(t(pop$sample[1,,]), cumsum(pop$sampleWaiting)) %>% data.frame
   s <- cbind(s, 'susceptible')
   colnames(s)[c(NCOL(s)-1, NCOL(s))] <- c('time', 'state')
 
@@ -243,7 +244,7 @@ pAll <- function(pop, o = FALSE){
 pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE){
   
   if(is.null(end)){
-    end <- pop$parameters['events']
+    end <- pop$parameters['events']/pop$parameters['sample']
   }
 
   if(S){
@@ -255,10 +256,10 @@ pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALS
   }
 
   # Sum infections from different classes
-  z <- t(apply(pop$I[removeS, , start:end], c(1,3), sum))
+  z <- t(apply(pop$sample[removeS, , start:end], c(1,3), sum))
   
   
-  d <- cbind(z, cumsum(pop$waiting[start:end])) %>% data.frame
+  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
 
   nPaths <- sapply(pop$diseaseList, length)[removeS]
 
@@ -307,11 +308,11 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   if(is.null(end)){
     end <- pop$parameters['events']
   }
-  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$I[pop$whichClasses[,p], , start:end])))
+  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$sample[pop$whichClasses[,p], , start:end])))
 
   I <- do.call(cbind, I)
 
-  d <- cbind(I, cumsum(pop$waiting[start:end])) %>% data.frame
+  d <- cbind(I, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -348,7 +349,7 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
 
 pSI <- function(pop, o = FALSE){
   
-  I <- cbind(apply(pop$I[-1, , ], 3, sum), apply(pop$I[1, , ], 2, sum), cumsum(pop$waiting)) %>% data.frame
+  I <- cbind(apply(pop$sample[-1, , ], 3, sum), apply(pop$sample[1, , ], 2, sum), cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(I) <- c('I', 'S', 'time')
 
   if(o){
