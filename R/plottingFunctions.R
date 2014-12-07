@@ -330,9 +330,14 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   # Just declare these to avoid CRAN check notes
   value <- colony <- Pathogen <- NULL
 
+
+  # If null set end to final event (i.e. plot whole time)
   if(is.null(end)){
-    end <- pop$parameters['events']
+    end <- dim(pop$sample)[3]
   }
+
+
+  
   I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$sample[pop$whichClasses[, p], , start:end])))
 
   I <- do.call(cbind, I)

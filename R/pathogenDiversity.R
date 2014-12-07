@@ -46,7 +46,11 @@ seedPathogen <- function(pop, pathogens = 1, n = 1){
 		# keep pop size constant
 		pop$I[1, r, 1] <- pop$I[1, r, 1] - n
 	}
+
+  pop$sample[, , 1] <- pop$I[, , 1]
   pop <- transRates(pop, 1)
+
+  assert_that(all(pop$I[, , 1] >= 0))
 
 	return(pop)
 }
