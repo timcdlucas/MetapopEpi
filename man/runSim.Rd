@@ -8,7 +8,7 @@ runSim(pop, time = "end")
 \arguments{
 \item{pop}{A population object}
 
-\item{t}{The event number to run the simulation until.}
+\item{time}{The event number to run the simulation until.}
 }
 \description{
 Each time step, pick a random event and perform that event.

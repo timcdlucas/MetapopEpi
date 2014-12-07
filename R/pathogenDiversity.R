@@ -93,7 +93,7 @@ randEvent <- function(pop, t){
 #'@export
 #'@name runSim
 #'@inheritParams randEvent
-#'@param t The event number to run the simulation until.
+#'@param time The event number to run the simulation until.
 
 runSim <- function(pop, time = 'end'){
 
@@ -137,8 +137,8 @@ runSim <- function(pop, time = 'end'){
 #' A single draw from a exponential distribution given randU, a number between 0 and 1.
 #'   As population now has 
 #'
-#'@param randU Numeric in [0,1]. Typically this will a random uniform number. 
 #'@name waitingTime
+#'@inheritParams randEvent
 
 waitingTime <- function(pop, t){
   pop$waiting[t + 1] <- log(1 - pop$randU[t]) / (-pop$totalRate)
@@ -153,7 +153,7 @@ waitingTime <- function(pop, t){
 #' Calculate new transition rates.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name transRates
 #'@family initialRates
 #'@export 
@@ -186,7 +186,7 @@ transRates <- function(pop, t){
 #'
 #' Calculate starting birth rate for each colony. Later functions recalculate relevant rates after an event.
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name birthR
 #'@family initialRates
 #' 
@@ -199,7 +199,7 @@ birthR <- function(pop, t){
 #'
 #' Calculate starting death rate for each colony. Later functions recalculate relevant rates after an event.
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name deathR
 #'@family initialRates
 #' 
@@ -211,7 +211,7 @@ deathR <- function(pop, t){
 #'
 #' Calculate starting dispersal rate for each colony. Later functions recalculate relevant rates after an event.
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name dispersalR
 #'@family initialRates
 #' 
@@ -223,7 +223,7 @@ dispersalR <- function(pop, t){
 #' Calculate infection rates for each colony.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name infectionR
 #'@family initialRates
 #'@return nColonies * nPathogens vector Grouped by pathogen
@@ -237,7 +237,7 @@ infectionR <- function(pop, t){
 #' Calculate coinfection rates for each colony.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name coinfectionR
 #'@family initialRates
 #'@return nColonies * something. Grouped by to class, then from class
@@ -261,7 +261,7 @@ coinfectionR <- function(pop, t){
 #' Calculate recovery rates for each colony.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name infectionR
 #'@family initialRates
 #'@return nColonies * nPathogens vector Grouped by pathogen
@@ -280,7 +280,7 @@ recoveryR <- function(pop, t){
 #' Find possible possible infection transitions.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name infectionTrans
 #'@family initialRates
 #' 
@@ -300,7 +300,7 @@ infectionTrans <- function(pop){
 #' Make vector of which disease is added for each coinfection transitions in pop$transitions
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name findDiseaseAdded
 #'@family initialRates
 #' 
@@ -364,6 +364,7 @@ adjMatrix <- function(locations, maxDistance){
 #'
 #'@param locations x, y numeric locations of each colony.
 #'@param maxDistance For kernels with an upper threshold
+#'@param kern Character, giving the name of the distance kernel to be used.
 #'
 #'@name weightMatrix
 #'@family Networks 

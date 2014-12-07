@@ -18,6 +18,8 @@ makePop(model = "SI", nColonies = 5, colonyDistr = "equal", space = 100,
 
 \item{space}{How large should the space be. A positive number giving the length along a side.}
 
+\item{maxDistance}{The maximum distance within which two colonies can be connected in the network.}
+
 \item{kernel}{How should the network be weighted with respect to distance between colonies. 'inverse', 'linear', 'unweighted'}
 
 \item{events}{Integer defining the number of events to run before stopping the simulation. A single event is an infection, death, birth, migration etc.}
@@ -41,8 +43,6 @@ makePop(model = "SI", nColonies = 5, colonyDistr = "equal", space = 100,
 \item{crossImmunity}{Numeric between 0 and 1 that governs cross immunity. 0 is full cross immunity, 1 is no cross immunity.}
 
 \item{sample}{The sample rate of population states to store. Default is to store every 1000 events.}
-
-\item{maxDistace}{The maximum distance within which two colonies can be connected in the network.}
 }
 \value{
 A large list that contains the model parameters (numeric in 'parameters' and strings in 'models'.

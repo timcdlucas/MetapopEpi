@@ -5,6 +5,9 @@
 \usage{
 initTransitions(pop)
 }
+\arguments{
+\item{pop}{A population object}
+}
 \description{
 Build the transition data.frame which will have rates populated later.
 }

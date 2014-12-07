@@ -3,7 +3,7 @@ context('Test makePop function that initializes populations.')
 test_that('makePop creates correct data types', {
   p <- makePop()
 
-  expect_equal(length(p), 16)
+  expect_equal(length(p), 18)
   expect_true(inherits(p$parameters, 'numeric'))
   expect_true(inherits(p$models, 'data.frame'))
   expect_true(inherits(p$I, 'array'))
@@ -21,9 +21,9 @@ test_that('makePop creates correct data types', {
 })
 
 test_that('makePop creates correctly sized arrays for S and I', {
-  p1 <- makePop(nColonies = 10, nPathogens = 5, events = 20)
+  p1 <- makePop(nColonies = 10, nPathogens = 5, events = 20, sample = 1000)
 
-  expect_true(all.equal(dim(p1$I), c(2^5, 10, 20 + 1)))
+  expect_true(all.equal(dim(p1$I), c(2^5, 10, 1000 + 1)))
 
   # Currently nColonies = 1 crashes. Wasn't deliberate but is probably a good choice.
   expect_error(makePop(nColonies = 1, nPathogens = 5, events = 20))

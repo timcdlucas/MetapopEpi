@@ -5,6 +5,9 @@
 \usage{
 infectionTrans(pop)
 }
+\arguments{
+\item{pop}{A population object}
+}
 \description{
 Find possible possible infection transitions.
 }

@@ -6,9 +6,17 @@
 pClass(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE)
 }
 \arguments{
-\item{pop}{A population object}
+\item{pop}{A MetapopEpi class object}
 
-\item{o}{Logical whether to plot from the origin or not}
+\item{start}{What event to start plotting from.}
+
+\item{end}{What event to end plotting from. If NULL, plot until end.}
+
+\item{S}{Logical, controls whether or not to include the susceptible population.}
+
+\item{nPath}{Logical, Colour the plot by number of pathogens or by class number}
+
+\item{o}{Logical. Truncate y-axis.}
 }
 \description{
 Plot the total number of individuals in each disease class

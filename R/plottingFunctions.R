@@ -74,6 +74,9 @@ popHeat <- function(pop){
 
 pSus <- function(pop, o = FALSE){
   
+  # Just declare these to avoid CRAN check notes
+  value <- Colony <- NULL
+  
   d <- cbind(t(pop$samplde[1,,]), cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
@@ -102,12 +105,16 @@ pSus <- function(pop, o = FALSE){
 
 #' Plot the total number of infected individuals in each colony
 #'
-#'@inheritParams pSus
+#'@inheritParams pClass
 #'@name pInf
 #'@export
 
 
 pInf <- function(pop, o = FALSE){
+
+  # Just declare these to avoid CRAN check notes
+  value <- Colony <- . <- NULL
+
   
   I <- pop$sample[2:NROW(pop$sample),,] %>% apply(., c(2,3), sum) %>% t
 
@@ -145,13 +152,17 @@ pInf <- function(pop, o = FALSE){
 
 #' Plot the total number of individuals in each colony
 #'
-#'@inheritParams pSus
+#'@inheritParams pClass
 #'@name pPop
 #'@export
 
 
 pPop <- function(pop, o = FALSE){
   
+  # Just declare these to avoid CRAN check notes
+  value <- Colony <- . <- NULL
+
+
   I <- pop$sample %>% apply(., c(2,3), sum) %>% t
 
   d <- cbind(I, cumsum(pop$sampleWaiting)) %>% data.frame
@@ -184,26 +195,29 @@ pPop <- function(pop, o = FALSE){
 
 #' Plot something...
 #'
-#'@inheritParams pSus
+#'@inheritParams pClass
 #'@name pAll
 #'@export
 
 
 pAll <- function(pop, o = FALSE){
 
+  # Just declare these to avoid CRAN check notes
+  value <- colonyState <- . <- NULL
+
   # Sum infections from different classes
-  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$sample[pop$whichClasses[,x],,], c(2,3) , sum))
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$sample[pop$whichClasses[, x], , ], c(2, 3), sum))
 
   z2 <- do.call(rbind, z)
 
   
   d <- cbind(t(z2), cumsum(pop$sampleWaiting)) %>% data.frame
   d <- cbind(d, 'disease')
-  colnames(d)[c(NCOL(d)-1, NCOL(d))] <- c('time', 'state')
+  colnames(d)[c(NCOL(d) - 1, NCOL(d))] <- c('time', 'state')
 
-  s <- cbind(t(pop$sample[1,,]), cumsum(pop$sampleWaiting)) %>% data.frame
+  s <- cbind(t(pop$sample[1, , ]), cumsum(pop$sampleWaiting)) %>% data.frame
   s <- cbind(s, 'susceptible')
-  colnames(s)[c(NCOL(s)-1, NCOL(s))] <- c('time', 'state')
+  colnames(s)[c(NCOL(s) - 1, NCOL(s))] <- c('time', 'state')
 
   longd <- melt(d, id = c('time', 'state') , variable.name = 'colony')
   longs <- melt(s, id = c('time', 'state') , variable.name = 'colony')
@@ -214,7 +228,7 @@ pAll <- function(pop, o = FALSE){
   longAll <- longAll[longAll$value != 0, ]
 
   twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
-  twoGroups[grep('disease',names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
+  twoGroups[grep('disease', names(table(longAll$colonyState)))] <- brewer.pal(3, 'Set1')[1]
   names(twoGroups) <- names(table(longAll$colonyState))
 
   if(o){
@@ -237,12 +251,20 @@ pAll <- function(pop, o = FALSE){
 
 #' Plot the total number of individuals in each disease class
 #'
-#'@inheritParams pSus
+#'@param pop A MetapopEpi class object
+#'@param start What event to start plotting from.
+#'@param end What event to end plotting from. If NULL, plot until end.
+#'@param S Logical, controls whether or not to include the susceptible population.
+#'@param nPath Logical, Colour the plot by number of pathogens or by class number
+#'@param o Logical. Truncate y-axis.
 #'@name pClass
 #'@export
 
 pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE){
   
+  # Just declare these to avoid CRAN check notes
+  value <- colony <- disease <- NULL
+
   if(is.null(end)){
     end <- pop$parameters['events']/pop$parameters['sample']
   }
@@ -263,7 +285,7 @@ pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALS
 
   nPaths <- sapply(pop$diseaseList, length)[removeS]
 
-    colnames(d) <- c( 1:(nClass), 'time')
+    colnames(d) <- c(1:(nClass), 'time')
   
 
 
@@ -298,17 +320,20 @@ pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALS
 
 #' Plot the total number of infected individuals with each disease
 #'
-#'@inheritParams pSus
+#'@inheritParams pClass
 #'@name pDis
 #'@export
 
 
 pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   
+  # Just declare these to avoid CRAN check notes
+  value <- colony <- Pathogen <- NULL
+
   if(is.null(end)){
     end <- pop$parameters['events']
   }
-  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$sample[pop$whichClasses[,p], , start:end])))
+  I <- lapply(1:pop$parameters['nPathogens'], function(p) colSums(colSums(pop$sample[pop$whichClasses[, p], , start:end])))
 
   I <- do.call(cbind, I)
 
@@ -343,12 +368,15 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
 
 #' Plot the total number of infected individuals and total Susceptible.
 #'
-#'@inheritParams pSus
+#'@inheritParams pClass
 #'@name pSI
 #'@export
 
 pSI <- function(pop, o = FALSE){
   
+  # Just declare these to avoid CRAN check notes
+  value <- SI_class <- NULL
+
   I <- cbind(apply(pop$sample[-1, , ], 3, sum), apply(pop$sample[1, , ], 2, sum), cumsum(pop$sampleWaiting)) %>% data.frame
   colnames(I) <- c('I', 'S', 'time')
 

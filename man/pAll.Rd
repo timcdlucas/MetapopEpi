@@ -6,9 +6,9 @@
 pAll(pop, o = FALSE)
 }
 \arguments{
-\item{pop}{A population object}
+\item{pop}{A MetapopEpi class object}
 
-\item{o}{Logical whether to plot from the origin or not}
+\item{o}{Logical. Truncate y-axis.}
 }
 \description{
 Plot something...

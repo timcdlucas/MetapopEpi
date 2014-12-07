@@ -6,9 +6,13 @@
 pDis(pop, start = 1, end = NULL, o = FALSE)
 }
 \arguments{
-\item{pop}{A population object}
+\item{pop}{A MetapopEpi class object}
 
-\item{o}{Logical whether to plot from the origin or not}
+\item{start}{What event to start plotting from.}
+
+\item{end}{What event to end plotting from. If NULL, plot until end.}
+
+\item{o}{Logical. Truncate y-axis.}
 }
 \description{
 Plot the total number of infected individuals with each disease

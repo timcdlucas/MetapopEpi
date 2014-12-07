@@ -5,6 +5,9 @@
 \usage{
 findDiseaseAdded(pop)
 }
+\arguments{
+\item{pop}{A population object}
+}
 \description{
 Make vector of which disease is added for each coinfection transitions in pop$transitions
 }

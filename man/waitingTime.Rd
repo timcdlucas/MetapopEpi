@@ -6,7 +6,9 @@
 waitingTime(pop, t)
 }
 \arguments{
-\item{randU}{Numeric in [0,1]. Typically this will a random uniform number.}
+\item{pop}{A population object}
+
+\item{t}{Time step. Note the population should be AT time t, going to t+1.}
 }
 \description{
 A single draw from a exponential distribution given randU, a number between 0 and 1.

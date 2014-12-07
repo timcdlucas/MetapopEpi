@@ -9,6 +9,8 @@ weightMatrix(locations, maxDistance, kern)
 \item{locations}{x, y numeric locations of each colony.}
 
 \item{maxDistance}{For kernels with an upper threshold}
+
+\item{kern}{Character, giving the name of the distance kernel to be used.}
 }
 \description{
 For weighted networks, draw an adjacency matrix showing which colonies are connected and how strongly connected they are

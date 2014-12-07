@@ -10,7 +10,7 @@
 #'@param nColonies How many colonies/subpopulations do you want.
 #'@param colonyDistr The model for colony size distirbution. Currently one of 'equal', 'exponential', 'poisson'. 
 #'@param space How large should the space be. A positive number giving the length along a side.
-#'@param maxDistace The maximum distance within which two colonies can be connected in the network.
+#'@param maxDistance The maximum distance within which two colonies can be connected in the network.
 #'@param kernel How should the network be weighted with respect to distance between colonies. 'inverse', 'linear', 'unweighted'
 #'@param events Integer defining the number of events to run before stopping the simulation. A single event is an infection, death, birth, migration etc.
 #'@param colonySpatialDistr How are the colonies distributed in space. 'uniform', 'circle'
@@ -68,6 +68,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
   assert_that(nColonies > 1)
 	assert_that(is.numeric(space), length(space)==1)
 	assert_that(is.numeric(maxDistance), length(maxDistance)==1)
+  assert_that(events > sample)
 
   assert_that(all(is.numeric(c(birth, death, dispersal, transmission, recovery))))
   assert_that(all(c(birth, death, dispersal, transmission, recovery) >= 0))
@@ -183,7 +184,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 #' Build the transition data.frame which will have rates populated later.
 #'
 #'
-#'@inheritParams sumI
+#'@inheritParams randEvent
 #'@name initTransitions
 #'@family initialRates
 #'@export 

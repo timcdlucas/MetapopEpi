@@ -9,7 +9,9 @@ infectionR(pop, t)
 recoveryR(pop, t)
 }
 \arguments{
-\item{t}{Time. An integer giving the event number (i.e. the 1000th event).}
+\item{pop}{A population object}
+
+\item{t}{Time step. Note the population should be AT time t, going to t+1.}
 }
 \value{
 nColonies * nPathogens vector Grouped by pathogen

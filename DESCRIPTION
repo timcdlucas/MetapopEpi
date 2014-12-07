@@ -15,7 +15,6 @@ Imports:
     magrittr,
     igraph,
     reshape2,
-    compiler,
     ggplot2
 Suggests:
     knitr
