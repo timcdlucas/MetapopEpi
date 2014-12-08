@@ -260,7 +260,7 @@ pAll <- function(pop, o = FALSE){
 #'@name pClass
 #'@export
 
-pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALSE){
+pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   
   # Just declare these to avoid CRAN check notes
   value <- colony <- disease <- NULL
@@ -285,7 +285,7 @@ pClass <- function(pop, start = 1, end = NULL, S = FALSE, nPath = TRUE, o = FALS
 
   nPaths <- sapply(pop$diseaseList, length)[removeS]
 
-    colnames(d) <- c(1:(nClass), 'time')
+  colnames(d) <- c(1:(nClass), 'time')
   
 
 
