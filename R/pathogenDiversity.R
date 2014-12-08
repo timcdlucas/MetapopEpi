@@ -21,6 +21,7 @@ NULL
 #'@param pop A metapopulation object as created by makePop().
 #'@param pathogens Character vector of which pathogens should be seeded
 #'@param n How many individuals should be infected.
+#'@param DiffCols Logical. If True, pathogen infections are forced to be in different colonies. Allows n to be as big as meanColonySize but requires nColonies > nPathogens
 #'
 #'@return An update object of same structure as from makePop
 #'@family Run,sims
@@ -32,19 +33,21 @@ NULL
 #'u <- seedPathogen(p, pathogens = 1:p$parameters['nPathogens'])
 
 
-seedPathogen <- function(pop, pathogens = 1, n = 1){
+seedPathogen <- function(pop, pathogens = 1, n = 1, DiffCols = TRUE){
 	
   assert_that(all(sapply(pathogens, is.count)))
 	# can't seed more species than were initiliased.
 	assert_that(max(pathogens) <= pop$parameters['nPathogens'])
   assert_that(length(pathogens) <= pop$parameters['nPathogens'])
 	
+  # choose random colony
+	r <- sample(pop$parameters['nColonies'], length(pathogens), replace = !DiffCols)  
+
 	for(path in pathogens){
-		# choose random colony
-		r <- sample(pop$parameters['nColonies'], 1)
-		pop$I[path + 1, r, 1] <- n
+
+		pop$I[path + 1, r[path], 1] <- n
 		# keep pop size constant
-		pop$I[1, r, 1] <- pop$I[1, r, 1] - n
+		pop$I[1, r[path], 1] <- pop$I[1, r[path], 1] - n
 	}
 
   pop$sample[, , 1] <- pop$I[, , 1]
