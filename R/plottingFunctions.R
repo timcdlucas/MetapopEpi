@@ -79,7 +79,7 @@ pSus <- function(pop, start = 1, end = NULL, o = FALSE){
   
   
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
   d <- cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
@@ -122,7 +122,7 @@ pInf <- function(pop, start = 1, end = NULL, o = FALSE){
   value <- Colony <- . <- NULL
 
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
   
   I <- pop$sample[2:NROW(pop$sample),,] %>% apply(., c(2,3), sum) %>% t
@@ -173,7 +173,7 @@ pPop <- function(pop, start = 1, end = NULL, o = FALSE){
   value <- Colony <- . <- NULL
 
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
   I <- pop$sample[, , start:end] %>% apply(., c(2,3), sum) %>% t
@@ -220,7 +220,7 @@ pAll <- function(pop, start = 1, end = NULL, o = FALSE){
   value <- colonyState <- . <- NULL
 
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
   # Sum infections from different classes
@@ -285,7 +285,7 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
   value <- colony <- disease <- NULL
 
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
   if(S){
@@ -404,7 +404,7 @@ pSI <- function(pop, start = 1, end = NULL){
   value <- SI_class <- NULL
 
   if(is.null(end)){
-    end <- pop$parameters['events']/pop$parameters['sample']
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
   I <- cbind(apply(pop$sample[-1, , start:end], 3, sum), apply(pop$sample[1, , start:end], 2, sum), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
