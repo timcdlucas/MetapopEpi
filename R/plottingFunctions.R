@@ -72,12 +72,17 @@ popHeat <- function(pop){
 #'@name pSus
 #'@export
 
-pSus <- function(pop, o = FALSE){
+pSus <- function(pop, start = 1, end = NULL, o = FALSE){
   
   # Just declare these to avoid CRAN check notes
   value <- Colony <- NULL
   
-  d <- cbind(t(pop$samplde[1,,]), cumsum(pop$sampleWaiting)) %>% data.frame
+  
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample']
+  }
+
+  d <- cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -96,6 +101,7 @@ pSus <- function(pop, o = FALSE){
        aes(x = time, y = value, colour = Colony)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_color_manual(values = greySelection) +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
@@ -110,11 +116,14 @@ pSus <- function(pop, o = FALSE){
 #'@export
 
 
-pInf <- function(pop, o = FALSE){
+pInf <- function(pop, start = 1, end = NULL, o = FALSE){
 
   # Just declare these to avoid CRAN check notes
   value <- Colony <- . <- NULL
 
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample']
+  }
   
   I <- pop$sample[2:NROW(pop$sample),,] %>% apply(., c(2,3), sum) %>% t
 
@@ -137,6 +146,7 @@ pInf <- function(pop, o = FALSE){
        aes(x = time, y = value, colour = Colony)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_color_manual(values = greySelection) +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
@@ -157,15 +167,18 @@ pInf <- function(pop, o = FALSE){
 #'@export
 
 
-pPop <- function(pop, o = FALSE){
+pPop <- function(pop, start = 1, end = NULL, o = FALSE){
   
   # Just declare these to avoid CRAN check notes
   value <- Colony <- . <- NULL
 
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample']
+  }
 
-  I <- pop$sample %>% apply(., c(2,3), sum) %>% t
+  I <- pop$sample[, , start:end] %>% apply(., c(2,3), sum) %>% t
 
-  d <- cbind(I, cumsum(pop$sampleWaiting)) %>% data.frame
+  d <- cbind(I, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -184,6 +197,7 @@ pPop <- function(pop, o = FALSE){
        aes(x = time, y = value, colour = Colony)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_color_manual(values = greySelection) +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
@@ -200,22 +214,26 @@ pPop <- function(pop, o = FALSE){
 #'@export
 
 
-pAll <- function(pop, o = FALSE){
+pAll <- function(pop, start = 1, end = NULL, o = FALSE){
 
   # Just declare these to avoid CRAN check notes
   value <- colonyState <- . <- NULL
 
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample']
+  }
+
   # Sum infections from different classes
-  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$sample[pop$whichClasses[, x], , ], c(2, 3), sum))
+  z <- lapply(1:pop$parameters['nPathogens'], function(x) apply(pop$sample[pop$whichClasses[, x], , start:end], c(2, 3), sum))
 
   z2 <- do.call(rbind, z)
 
   
-  d <- cbind(t(z2), cumsum(pop$sampleWaiting)) %>% data.frame
+  d <- cbind(t(z2), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
   d <- cbind(d, 'disease')
   colnames(d)[c(NCOL(d) - 1, NCOL(d))] <- c('time', 'state')
 
-  s <- cbind(t(pop$sample[1, , ]), cumsum(pop$sampleWaiting)) %>% data.frame
+  s <- cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
   s <- cbind(s, 'susceptible')
   colnames(s)[c(NCOL(s) - 1, NCOL(s))] <- c('time', 'state')
 
@@ -241,6 +259,7 @@ pAll <- function(pop, o = FALSE){
        aes(x = time, y = value, colour = colonyState)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_color_manual(values = twoGroups) +
     scale_y_continuous(limits = c(ymin, max(longAll$value))) +
@@ -278,8 +297,8 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
   }
 
   # Sum infections from different classes
-  z <- t(apply(pop$sample[removeS, , start:end], c(1,3), sum))
-  
+  z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
+   
   
   d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
 
@@ -307,6 +326,7 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
        aes(x = time, y = value, group = disease, colour = factor(nPath))) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
     labs(colour = "Coinfection lvl") +
@@ -325,7 +345,7 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
 #'@export
 
 
-pDis <- function(pop, start = 1, end = NULL, o = FALSE){
+pDis <- function(pop, start = 1, end = NULL, start = 1, end = NULL, o = FALSE){
   
   # Just declare these to avoid CRAN check notes
   value <- colony <- Pathogen <- NULL
@@ -362,6 +382,7 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
        aes(x = time, y = value, colour = Pathogen)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
     scale_color_manual(values = greySelection) +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
@@ -377,19 +398,17 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
 #'@name pSI
 #'@export
 
-pSI <- function(pop, o = FALSE){
+pSI <- function(pop, start = 1, end = NULL){
   
   # Just declare these to avoid CRAN check notes
   value <- SI_class <- NULL
 
-  I <- cbind(apply(pop$sample[-1, , ], 3, sum), apply(pop$sample[1, , ], 2, sum), cumsum(pop$sampleWaiting)) %>% data.frame
-  colnames(I) <- c('I', 'S', 'time')
-
-  if(o){
-    ymin <- 0
-  } else { 
-    ymin <- min(longd$value)
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample']
   }
+
+  I <- cbind(apply(pop$sample[-1, , start:end], 3, sum), apply(pop$sample[1, , start:end], 2, sum), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  colnames(I) <- c('I', 'S', 'time')
 
   longd <- melt(I, id = 'time', variable.name = 'SI_class')
   longd <- longd[longd$value != 0, ]
@@ -398,8 +417,9 @@ pSI <- function(pop, o = FALSE){
        aes(x = time, y = value, colour = SI_class)) +
     geom_line() +
     ylab('Individuals') + 
+    xlab('Time') + 
     theme_minimal() +
-    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    scale_y_continuous(limits = c(0, max(longd$value))) +
     theme(legend.position="none")
 
 }
