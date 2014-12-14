@@ -1,9 +1,9 @@
 context('Test makePop function that initializes populations.')
 
 test_that('makePop creates correct data types', {
-  p <- makePop()
+  p <- makePop(model = 'SI')
 
-  expect_equal(length(p), 18)
+  expect_equal(length(p), 19)
   expect_true(inherits(p$parameters, 'numeric'))
   expect_true(inherits(p$models, 'data.frame'))
   expect_true(inherits(p$I, 'array'))
@@ -20,17 +20,18 @@ test_that('makePop creates correct data types', {
   expect_true(inherits(p$waiting, 'numeric'))
 })
 
-test_that('makePop creates correctly sized arrays for S and I', {
-  p1 <- makePop(nColonies = 10, nPathogens = 5, events = 20, sample = 1000)
+test_that('makePop creates correctly sized arrays for I and sample', {
+  p1 <- makePop(model = 'SI', nColonies = 10, nPathogens = 5, events = 2000, sample = 1000)
 
+  
   expect_true(all.equal(dim(p1$I), c(2^5, 10, 1000 + 1)))
 
   # Currently nColonies = 1 crashes. Wasn't deliberate but is probably a good choice.
-  expect_error(makePop(nColonies = 1, nPathogens = 5, events = 20))
+  expect_error(makePop(nColonies = 1, nPathogens = 5, events = 20, sample = 1), 'nColonies not')
 
 
   # nPathogens must be > 1 as well
-  expect_error(makePop(nColonies = 10, nPathogens = 1, events = 20))
+  expect_error(makePop(nColonies = 10, nPathogens = 1, events = 20, sample = 1), 'nPathogens not')
 
 
   # nPathogens == 2 should be allowed

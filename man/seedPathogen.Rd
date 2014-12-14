@@ -3,7 +3,7 @@
 \alias{seedPathogen}
 \title{Add single individuals infected with a number of pathogens}
 \usage{
-seedPathogen(pop, pathogens = 1, n = 1, DiffCols = TRUE)
+seedPathogen(pop, pathogens = 1, n = 1, diffCols = TRUE)
 }
 \arguments{
 \item{pop}{A metapopulation object as created by makePop().}
@@ -12,7 +12,7 @@ seedPathogen(pop, pathogens = 1, n = 1, DiffCols = TRUE)
 
 \item{n}{How many individuals should be infected.}
 
-\item{DiffCols}{Logical. If True, pathogen infections are forced to be in different colonies. Allows n to be as big as meanColonySize but requires nColonies > nPathogens}
+\item{diffCols}{Logical. If True, pathogen infections are forced to be in different colonies. Allows n to be as big as meanColonySize but requires nColonies > nPathogens}
 }
 \value{
 An update object of same structure as from makePop

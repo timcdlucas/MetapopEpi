@@ -4,8 +4,8 @@ context('Test internal functions for makePop and runnings sims.')
 test_that('randEvent works correctly', {
  
   set.seed(2)
-  pop <- makePop(nColonies = 2)
-  pop <- seedPathogen(pop, c(1:3))
+  pop <- makePop(model = 'SI', nColonies = 2)
+  pop <- seedPathogen(pop, c(1:3), diffCols = FALSE)
   
   # Artificially force t 1:4 to be birth, death, infection, dispersal
   pop$randEventU[1] <- 0.0000001
@@ -67,7 +67,7 @@ test_that('randEvent works correctly', {
 
 
 test_that('waitingTime works correctly', {
-  pop <- makePop(events = 20, sample = 1)
+  pop <- makePop(model = 'SI', events = 20, sample = 1)
   
   p1 <- runSim(pop)
 
@@ -76,7 +76,7 @@ test_that('waitingTime works correctly', {
 
 
   # Check that the only thing changed is pop$waiting[t +1]
-  pop2 <- makePop(events = 20)
+  pop2 <- makePop(model = 'SI', events = 20, sample = 1)
 
   pop3 <- waitingTime(pop2, 1)
 
@@ -97,7 +97,7 @@ test_that('waitingTime works correctly', {
 
 
 test_that('transRates works', {
-  pop <- makePop(events = 20)
+  pop <- makePop(model = 'SI', events = 20, sample = 1)
 
   pop2 <- transRates(pop, 1)
 
@@ -111,7 +111,7 @@ test_that('transRates works', {
   expect_true(all(pop2$transitions$rate[pop2$transitions$type == 'dispersal' & pop2$transitions$fromClass != 1] == 0))
 
 
-  pop3 <- makePop(nColonies = 2, nPathogens = 3, transmission = 1, dispersal = 2, birth = 3, death = 4)
+  pop3 <- makePop(model = 'SI', nColonies = 2, nPathogens = 3, transmission = 1, dispersal = 2, birth = 3, death = 4)
 
   pop3$I[, , 1] <- c(1:16)
 
@@ -132,7 +132,7 @@ test_that('transRates works', {
   expect_true(all(pop4$transitions$rate[pop4$transitions$type == 'death' & pop4$transitions$fromColony == 2] == 9:16 * 4))
   
 
-  pop5 <- makePop(nColonies = 2, nPathogens = 3, transmission = 1, crossImmunity = 1, meanColonySize = 1)
+  pop5 <- makePop(model = 'SI', nColonies = 2, nPathogens = 3, transmission = 1, crossImmunity = 1, meanColonySize = 1)
 
   pop6 <- pop5
   pop6$I[1:2, 1, 1] <- 1
@@ -197,7 +197,7 @@ test_that('transRates works', {
 
 test_that('initTransitions works.', {
 
-  p <- makePop(nPathogens = 2, nColonies = 2)
+  p <- makePop(model = 'SI', nPathogens = 2, nColonies = 2)
 
   p <- initTransitions(p)
 
@@ -238,7 +238,7 @@ test_that('initTransitions works.', {
 
 test_that('All rate calculating functions work.', {
 
-  p <- makePop(nPathogens = 2, nColonies = 2, birth = 1, transmission = 1, death = 1, dispersal = 1, crossImmunity = 1)
+  p <- makePop(model = 'SI', nPathogens = 2, nColonies = 2, birth = 1, transmission = 1, death = 1, dispersal = 1, crossImmunity = 1)
 
   # birthR
 
@@ -301,9 +301,9 @@ test_that('All rate calculating functions work.', {
 
 test_that('findInfectionTrans works', {
 
-  expect_true(all.equal(infectionTrans(makePop(nPathogens = 2)), cbind(c(1,1,2,3), c(2,3,4,4)), check.attributes=FALSE))
+  expect_true(all.equal(infectionTrans(makePop(model = 'SI', nPathogens = 2)), cbind(c(1,1,2,3), c(2,3,4,4)), check.attributes=FALSE))
 
-  expect_true(all.equal(infectionTrans(makePop(nPathogens = 3)), cbind(c(1,1,1,2,3,2,4,3,4,5,6,7), c(2,3,4,5,5,6,6,7,7,8,8,8)), , check.attributes=FALSE))
+  expect_true(all.equal(infectionTrans(makePop(model = 'SI', nPathogens = 3)), cbind(c(1,1,1,2,3,2,4,3,4,5,6,7), c(2,3,4,5,5,6,6,7,7,8,8,8)), , check.attributes=FALSE))
 
 })
 
@@ -314,17 +314,17 @@ test_that('findInfectionTrans works', {
 test_that('findDisease added works', {
 
   # list of which disease is added in rows in p$transitions for coinfection
-  expect_equal(findDiseaseAdded(makePop(nPathogens = 2, nColonies = 2)), c(2,2,1,1))
-  #expect_equal(findDiseaseAdded(makePop(nPathogens = 3, nColonies = 2)), c(2,2,3,3,1,1,3,3,1,1,2,2,3,3,2,2,1,1))
+  expect_equal(findDiseaseAdded(makePop(model = 'SI', nPathogens = 2, nColonies = 2)), c(2,2,1,1))
+  #expect_equal(findDiseaseAdded(makePop(model = 'SI', nPathogens = 3, nColonies = 2)), c(2,2,3,3,1,1,3,3,1,1,2,2,3,3,2,2,1,1))
 
 })
 
 test_that('Multiple infection death rate works', {
-  pop <- makePop(infectDeath = 1)
+  pop <- makePop(model = 'SI', infectDeath = 1)
   
   
 
-}
+})
 
 
 

@@ -26,7 +26,7 @@ test_that('seedPathogen works correctly.', {
 
   # Two pathogens
   # Doing pathogen 1 and path 3, just to check for weird stuff.
-  s2 <- seedPathogen(p, c(1,3))
+  s2 <- seedPathogen(p, pathogens = c(1, 3))
 
   # Still should be 50000 individuals
   expect_true(sum(s2$I[,,1]) == 50000)
