@@ -345,7 +345,7 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
 #'@export
 
 
-pDis <- function(pop, start = 1, end = NULL, start = 1, end = NULL, o = FALSE){
+pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   
   # Just declare these to avoid CRAN check notes
   value <- colony <- Pathogen <- NULL

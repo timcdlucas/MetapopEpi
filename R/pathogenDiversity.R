@@ -211,7 +211,7 @@ birthR <- function(pop, t){
 #'@family initialRates
 #' 
 deathR <- function(pop, t){
-  return(as.vector(apply(pop$I[,, t], 1, function(x) x*pop$parameters['death'] )))
+  return(as.vector(t(pop$I[, , 1] * pop$parameters['death'] + pop$nInfections * pop$parameters['infectDeath'])))
 }
 
 #' Calculate dispersal rates for each colony.

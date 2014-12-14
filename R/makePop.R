@@ -23,6 +23,7 @@
 #'@param recovery Positive numeric. Recovery rate per individual per unit time. Disease duration is therefore 1/recovery
 #'@param crossImmunity Numeric between 0 and 1 that governs cross immunity. 0 is full cross immunity, 1 is no cross immunity.
 #'@param sample The sample rate of population states to store. Default is to store every 1000 events.
+#'@param infectDeath Additional death rate due to infection. Death rate will be death + infectDeath * n. infections. 
 #'@return A large list that contains the model parameters (numeric in 'parameters' and strings in 'models'. 
 #'   The actual time course of the population is in 'I', nColonies x nPathogens x events array. 
 #'   The spatial locations of colonies are in 'locations' and 'adjacency' is the weighted (if applicable)
@@ -37,7 +38,7 @@
 #'
 
 
-makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 100, maxDistance = 200, kernel = 'unweighted', events = 10000, colonySpatialDistr = 'uniform', nPathogens = 3, meanColonySize = 10000, birth = 0.001, death = 0.001, dispersal = 0.001, transmission = 0.01, recovery = 0.005, crossImmunity = 0.1, sample = 1000){
+makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space = 100, maxDistance = 200, kernel = 'unweighted', events = 10000, colonySpatialDistr = 'uniform', nPathogens = 3, meanColonySize = 10000, birth = 0.001, death = 0.001, dispersal = 0.001, transmission = 0.01, recovery = 0.005, crossImmunity = 0.1, sample = 1000, infectDeath = 0){
 			
 	# Define lists of available options
 	modelList <-  c('SI', 'SIS', 'DISEASEFREE')
@@ -90,11 +91,12 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
                 recovery = recovery,
                 dispersal = dispersal, 
                 crossImmunity = crossImmunity,
-                sample = sample),
+                sample = sample, 
+                infectDeath = infectDeath),
 			    models = data.frame(model = model, 
 						    colonyDistr = colonyDistr, 
 						    kernel = kernel,
-                colonySpatialDistr = colonySpatialDistr,                            
+                colonySpatialDistr = colonySpatialDistr,  
                 stringsAsFactors = FALSE),
 			    locations = NULL,
 			    adjacency = NULL,
@@ -139,6 +141,7 @@ makePop <- function(model = 'SI', nColonies = 5, colonyDistr = 'equal', space = 
 	# So all infectives of disease 2 would be sum(pop$I[whichClasses[,2], , t]) or something.
 	pop$whichClasses <- sapply(1:nPathogens, function(x) grep(x, pop$diseaseClasses))
 	pop$nClasses <- length(pop$diseaseClasses)
+  pop$nInfections <- sapply(pop$diseaseList, length)
 
   # A list of which disease is added in order to reach new class
   #   for all coinfection rows in pop$transitions

@@ -319,6 +319,13 @@ test_that('findDisease added works', {
 
 })
 
+test_that('Multiple infection death rate works', {
+  pop <- makePop(infectDeath = 1)
+  
+  
+
+}
+
 
 
 
