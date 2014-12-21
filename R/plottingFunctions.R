@@ -425,3 +425,86 @@ pSI <- function(pop, start = 1, end = NULL){
 }
 
 
+
+
+
+
+
+
+
+#' Plot the number of individuals by number of infections and colony
+#'
+#'@param pop A MetapopEpi class object
+#'@param start What event to start plotting from.
+#'@param end What event to end plotting from. If NULL, plot until end.
+#'@param S Logical, controls whether or not to include the susceptible population.
+#'@param nPath Logical, Colour the plot by number of pathogens or by class number
+#'@param o Logical. Truncate y-axis.
+#'@name pCol
+#'@export
+
+pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
+  
+  # Just declare these to avoid CRAN check notes
+  value <- colony <- disease <- NULL
+
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
+  }
+
+  if(S){
+    removeS <- 1:pop$nClasses
+    nClass <- pop$nClasses
+  } else {
+    removeS <- -1
+    nClass <- pop$nClasses - 1
+  }
+
+  # Sum infections from different classes
+
+  #z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
+   
+  z <- do.call(rbind, lapply(1:dim(pop$sample)[2],  function(i) pop$sample[,i,])) %>% t
+  
+  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+
+  nPaths <- sapply(pop$diseaseList, length)[removeS]
+
+  disCol <- outer(1:nClass, 1:pop$parameters['nColonies'], paste, sep=".") %>% as.vector
+  nPathsAll <- rep(nPaths[1:nClass], each = pop$parameters['nColonies'])
+            
+
+  colnames(d) <- c(disCol, 'time')
+  
+
+
+  longd <- melt(d, id = 'time' , variable.name = 'disease')
+
+  longd <- longd[longd$value != 0, ]
+
+  disClass <-  sub('\\..*$', '', as.character(longd$disease)) %>% as.numeric
+
+  longd$nPath <- nPaths[disClass]
+
+  
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  cols <- brewer.pal(8, 'Dark2')
+
+  ggplot(data = longd,
+       aes(x = time, y = value, group = disease, colour = factor(longd$nPath))) +
+    geom_line(alpha = 0.6) +
+    ylab('Individuals') + 
+    xlab('Time') + 
+    theme_minimal() +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    labs(colour = "Coinfection lvl") +
+    scale_color_brewer(palette="Dark2") 
+
+}
+
+

@@ -67,7 +67,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 #'@param t Time step. Note the population should be AT time t, going to t+1.
 #'@name randEvent 
 
-randEvent <- function(pop, t){
+randEvent <- function(pop, t, tMod){
   # Calculate random number each time. Expect, precalcing randUnifs might be quicker.
 
 
@@ -77,16 +77,19 @@ randEvent <- function(pop, t){
 
   event <- pop$transitions[findInterval(pop$randEventU[t] * pop$totalRate, cumsum(c(0, pop$transitions$rate))), ]
 
+
   # Copy pop to t + 1
-  pop$I[, , t + 1] <- pop$I[, , t]
+  pop$I[, , tMod + 1] <- pop$I[, , tMod]
   
   # run event
-  pop$I[event[['fromClass']], event[['fromColony']], t + 1] <- pop$I[event[['fromClass']], event[['fromColony']], t ] - 1
-  pop$I[event[['toClass']], event[['toColony']], t + 1] <- pop$I[event[['toClass']], event[['toColony']], t] + 1
+  pop$I[event[['fromClass']], event[['fromColony']], tMod + 1] <- 
+    pop$I[event[['fromClass']], event[['fromColony']], tMod ] - 1
+  pop$I[event[['toClass']], event[['toColony']], tMod + 1] <- 
+    pop$I[event[['toClass']], event[['toColony']], tMod] + 1
 
-  pop <- transRates(pop, t + 1)
+  pop <- transRates(pop, tMod + 1)
   
-  pop <- waitingTime(pop, t)
+  pop <- waitingTime(pop, tMod)
 
   return(pop)
 }
@@ -121,7 +124,7 @@ runSim <- function(pop, time = 'end'){
     tMod <- (t - 1) %% pop$parameters['sample'] + 1
 
 
-    pop <- randEvent(pop, tMod)
+    pop <- randEvent(pop, t, tMod)
 
     if(tMod == pop$parameters['sample']){
       pop$sampleWaiting[t/pop$parameters['sample'] + 1] <- sum(pop$waiting)
