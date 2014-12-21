@@ -320,11 +320,28 @@ test_that('findDisease added works', {
 })
 
 test_that('Multiple infection death rate works', {
-  pop <- makePop(model = 'SI', infectDeath = 1)
-  
+
+  # With issue #7, this used to crash.
+  p <- makePop(events = 1e2+2, nColonies = 2, nPathogens = 2, model = 'SIS', infectDeath = 2, sample = 10)
+  p <- seedPathogen(p, c(1:2), n = 700)
+  p <- runSim(p)
+
+  expect_true(exists('p'))
   
 
+
+  
+  # caused an error with old bug. #7 
+  p <- makePop(events = 1e2, nColonies = 30, nPathogens = 3, model = 'SIS', recovery = 5,  sample = 10, dispersal = 0.05, birth = 0.05, death = 0.05, crossImmunity = 0.1, meanColonySize = 1000, infectDeath = 5)
+  p <- seedPathogen(p, c(1:3), n = 700)
+
+  expect_true(runSim(p), is_a("MetapopEpi"))
+
+
 })
+
+
+
 
 
 
