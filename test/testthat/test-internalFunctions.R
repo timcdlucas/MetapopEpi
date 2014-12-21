@@ -332,10 +332,14 @@ test_that('Multiple infection death rate works', {
 
   
   # caused an error with old bug. #7 
-  p <- makePop(events = 1e2, nColonies = 30, nPathogens = 3, model = 'SIS', recovery = 5,  sample = 10, dispersal = 0.05, birth = 0.05, death = 0.05, crossImmunity = 0.1, meanColonySize = 1000, infectDeath = 5)
-  p <- seedPathogen(p, c(1:3), n = 700)
+  p <- makePop(events = 1e2, nColonies = 5, nPathogens = 3, model = 'SIS', recovery = 5,  sample = 10, dispersal = 0.05, birth = 0.05, death = 0.05, crossImmunity = 0.1, meanColonySize = 1000, infectDeath = 5)
 
-  expect_true(runSim(p), is_a("MetapopEpi"))
+
+  p <- seedPathogen(p, c(1:3), n = 700)
+  p2 <- runSim(p)  
+
+
+  expect_true(exists('p2'))
 
 
 })
