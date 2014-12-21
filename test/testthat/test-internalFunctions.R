@@ -15,7 +15,7 @@ test_that('randEvent works correctly', {
 
 
   # birth => Susc row one bigger
-  pop <- randEvent(pop, 1)
+  pop <- randEvent(pop, 1, 1)
 
   # One has increased by one, rest haven't changed.
   expect_true(sum(pop$I[1, , 2] - pop$I[1, , 1]) == 1)
@@ -23,13 +23,13 @@ test_that('randEvent works correctly', {
 
 
   # death => whole time slice less one
-  pop <- randEvent(pop, 2)
+  pop <- randEvent(pop, 2, 2)
 
   expect_true(sum(pop$I[, , 3] - pop$I[, , 2]) == -1)
   expect_true(sum(pop$I[1, , 3] - pop$I[1, , 2] != 0) == 1)
 
   # infection
-  pop <- randEvent(pop, 3)
+  pop <- randEvent(pop, 3, 3)
   expect_true(sum(pop$I[, , 4] - pop$I[, , 3]) == 0)
   expect_true(sum(pop$I[, , 4] - pop$I[, , 3] != 0) == 2)
   expect_true(sum(pop$I[, , 4] - pop$I[, , 3] == 1) == 1)
@@ -48,7 +48,7 @@ test_that('randEvent works correctly', {
   expect_true(newi[1] > oldi[1])
 
   # dispersal one column +1, other -1
-  pop <- randEvent(pop, 4)
+  pop <- randEvent(pop, 4, 4)
   expect_true(sum(pop$I[, , 5] - pop$I[, , 4]) == 0)
   expect_true(sum(pop$I[, , 5] - pop$I[, , 4] != 0) == 2)
   expect_true(sum(pop$I[, , 5] - pop$I[, , 4] == 1) == 1)
