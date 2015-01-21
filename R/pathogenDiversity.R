@@ -147,22 +147,21 @@ transRates <- function(pop, t, event){
 
 #'@export
 #'@name runSim
-#'@param pop A MetapopEpi object
-#'@param start The event number to run the simulation until.
-#'@param end how long to run the simulation until.
+#'@inheritParams randEvent
+#'@param time The event number to run the simulation until.
 
-runSim <- function(pop, end = 'end', start = 1){
+runSim <- function(pop, time = 'end'){
 
-  assert_that(is.count(end) | end == 'end')
+  assert_that(is.count(time) | time == 'end')
 
-  if (end == 'end'){
-    end <- pop$parameters['events']
+  if (time == 'end'){
+    time <- pop$parameters['events']
   }
   
 
   pb <- txtProgressBar(1, pop$parameters['events'], style = 3)
     
-  for (t in start:end){
+  for (t in 1:time){
 
     
 
@@ -212,7 +211,7 @@ waitingTime <- function(pop, t){
 
   rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
 
-  if(pop$models$model == 'SIS' | pop$models$model == 'SIR'){
+  if(pop$models$model == 'SIS'){
     rate <- c(rate, recoveryR(pop, t))
   }
   
@@ -333,18 +332,9 @@ recoveryR <- function(pop, t){
 #'@family initialRates
 #' 
 infectionTrans <- function(pop){
-
-  # Parameter nClasses is all classes. Only want to use S + I classes
-  #   So reduce by 1 if SIR
-  if(pop$models$model == 'SIR'){ 
-    infClasses <- pop$nClasses - 1
-  } else {
-    infClasses <- pop$nClasses
-  }              
-
-  transMatr <- matrix(0, ncol = infClasses, nrow = pop$nClasses)                 
-  for(i in 1:infClasses){
-    for(j in 1:infClasses){
+  transMatr <- matrix(0, ncol = pop$nClasses, nrow = pop$nClasses)                 
+  for(i in 1:pop$nClasses){
+    for(j in 1:pop$nClasses){
       setDiff <- length(setdiff(pop$diseaseList[[j]], pop$diseaseList[[i]]))==1
       increasing <- all(pop$diseaseList[[i]] %in% pop$diseaseList[[j]])
       if(setDiff & increasing){transMatr[i,j] <- 1 }

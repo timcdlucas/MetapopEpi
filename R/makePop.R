@@ -41,7 +41,7 @@
 makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space = 100, maxDistance = 200, kernel = 'unweighted', events = 10000, colonySpatialDistr = 'uniform', nPathogens = 3, meanColonySize = 10000, birth = 0.001, death = 0.001, dispersal = 0.001, transmission = 0.01, recovery = 0.005, crossImmunity = 0.1, sample = 1000, infectDeath = 0){
 			
 	# Define lists of available options
-	modelList <-  c('SI', 'SIS', 'DISEASEFREE', 'SIR')
+	modelList <-  c('SI', 'SIS', 'DISEASEFREE')
 	colonyDistrList <- c('equal', 'exponential', 'poisson')
 	kernelList <- c('inverse', 'linear', 'unweighted')
 	colonySpatialDistrList <- c('uniform', 'circle')
@@ -141,9 +141,7 @@ makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space =
 	# So all infectives of disease 2 would be sum(pop$I[whichClasses[,2], , t]) or something.
 	pop$whichClasses <- sapply(1:nPathogens, function(x) grep(x, pop$diseaseClasses))
 	pop$nClasses <- length(pop$diseaseClasses)
-  if(pop$models$model == 'SIR') pop$nClasses <- length(pop$diseaseClasses) + 1
   pop$nInfections <- sapply(pop$diseaseList, length)
-  if(pop$models$model == 'SIR') pop$nInfections <- c(pop$nInfections, 0)
 
   # A list of which disease is added in order to reach new class
   #   for all coinfection rows in pop$transitions
@@ -152,7 +150,7 @@ makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space =
 	pop$I <- array(0, dim = c(pop$nClasses, nColonies, sample + 1), dimnames = c('pathogen', 'colony', 'events'))
 	
 	# Create colony sizes based on model in colonyDistr
-	pop$I[1, , 1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
+	pop$I[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
 
   # Make tmp array.
@@ -218,22 +216,9 @@ initTransitions <- function(pop){
     pop$transitions <- rbind(pop$transitions,
       data.frame(type = 'recovery', 
                  fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , 
-                 fromClass = rep(infectTrans[, 2], each = pop$parameters['nColonies']), 
+                 fromClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), 
                  toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), 
-                 toClass = rep(infectTrans[, 1], each = pop$parameters['nColonies']), 
-                 rate = NA)
-    )
-  }
-
-
-  if(pop$models$model == 'SIR'){
-    # infection in reverse
-    pop$transitions <- rbind(pop$transitions,
-      data.frame(type = 'recovery', 
-                 fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , 
-                 fromClass = rep(infectTrans[, 2], each = pop$parameters['nColonies']), 
-                 toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), 
-                 toClass = pop$nClasses, 
+                 toClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), 
                  rate = NA)
     )
   }
