@@ -508,3 +508,73 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
 }
 
 
+
+
+#' Plot the total number of individuals in each disease class
+#'
+#'@param pop A MetapopEpi class object
+#'@param start What event to start plotting from.
+#'@param end What event to end plotting from. If NULL, plot until end.
+#'@param S Logical, controls whether or not to include the susceptible population.
+#'@param nPath Logical, Colour the plot by number of pathogens or by class number
+#'@param o Logical. Truncate y-axis.
+#'@name pSIR
+#'@export
+
+pSIR <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
+  
+  assert_that(pop$models$model == 'SIR')
+  # Just declare these to avoid CRAN check notes
+  value <- colony <- disease <- NULL
+
+  if(is.null(end)){
+    end <- pop$parameters['events']/pop$parameters['sample'] + 1
+  }
+
+  if(S){
+    removeS <- 1:pop$nClasses
+    nClass <- pop$nClasses
+  } else {
+    removeS <- -1
+    nClass <- pop$nClasses - 1
+  }
+
+  # Sum infections from different classes
+  z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
+   
+  
+  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+
+  nPaths <- c(sapply(pop$diseaseList, length), 'R')[removeS]
+
+  colnames(d) <- c(1:(nClass), 'time')
+  
+
+
+  longd <- melt(d, id = 'time' , variable.name = 'disease')
+
+  longd$nPath <- nPaths[longd$disease]
+
+  longd <- longd[longd$value != 0, ]
+  
+  if(o){
+    ymin <- 0
+  } else { 
+    ymin <- min(longd$value)
+  }
+
+  cols <- brewer.pal(8, 'Dark2')
+
+  ggplot(data = longd,
+       aes(x = time, y = value, group = disease, colour = factor(nPath))) +
+    geom_line() +
+    ylab('Individuals') + 
+    xlab('Time') + 
+    theme_minimal() +
+    scale_y_continuous(limits = c(ymin, max(longd$value))) +
+    labs(colour = "Coinfection lvl") +
+    scale_color_brewer(palette="Dark2")
+
+}
+
+
