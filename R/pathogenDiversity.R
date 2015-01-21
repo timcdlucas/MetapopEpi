@@ -208,7 +208,6 @@ waitingTime <- function(pop, t){
 
 
 
-<<<<<<< HEAD
   # Infection from which class to which class.
 
   rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
@@ -322,8 +321,7 @@ recoveryR <- function(pop, t){
   curPop <- pop$I[, , t]
   return(pop$parameters['recovery'] * curPop[recoveryTrans])
 }
-=======
->>>>>>> 216f90d24664ec5867094c6bc29901eb05da8f91
+
 
 
 
