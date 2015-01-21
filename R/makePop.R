@@ -160,7 +160,8 @@ makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space =
 	pop$sample[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
   pop <- initTransitions(pop)
-	pop <- transRates(pop, 1)
+  # Calculate transition rates. Set dispersal = TRUE so that ALL rates are calculated, not just in a given colony
+	pop <- transRates(pop, 1, 'dispersal')
 
   # Make vector for waiting times both sample and final
   pop$waiting <- rep(0, sample + 1)
@@ -205,8 +206,8 @@ initTransitions <- function(pop){
   infectTrans <- infectionTrans(pop)
 
   pop$transitions <- rbind(
-			  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthR(pop,1), stringsAsFactors = FALSE),
-			  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathR(pop,1)),
+			  data.frame(type = 'birth', fromColony = NA, fromClass = NA, toColony = 1:pop$parameters['nColonies'], toClass = 1, rate = birthD(pop,1), stringsAsFactors = FALSE),
+			  data.frame(type = 'death', fromColony = rep(1:pop$parameters['nColonies'], pop$nClasses), fromClass = rep(1:pop$nClasses, each = pop$parameters['nColonies']), toColony = NA, toClass = NA, rate = deathD(pop,1)),
 			  data.frame(type = 'infection', fromColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])) , fromClass = rep(infectTrans[,1], each = pop$parameters['nColonies']), toColony = rep(1:pop$parameters['nColonies'], length(infectTrans[,1])), toClass = rep(infectTrans[,2], each = pop$parameters['nColonies']), rate = NA),
 			  data.frame(type = 'dispersal', fromColony = rep(pop$edgeList[,1], pop$nClasses), fromClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), toColony = rep(pop$edgeList[,2], pop$nClasses), toClass = rep(1:pop$nClasses, each = NROW(pop$edgeList)), rate = NA)
 			  )

@@ -52,7 +52,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 	}
 
   pop$sample[, , 1] <- pop$I[, , 1]
-  pop <- transRates(pop, 1)
+  pop <- transRates(pop, 1, 'dispersal')
 
   assert_that(all(pop$I[, , 1] >= 0))
 
@@ -65,6 +65,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 #' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
 #'@param pop A population object
 #'@param t Time step. Note the population should be AT time t, going to t+1.
+#'@param tMod Modulus of time and sample rate. 
 #'@name randEvent 
 
 randEvent <- function(pop, t, tMod){
@@ -87,10 +88,53 @@ randEvent <- function(pop, t, tMod){
   pop$I[event[['toClass']], event[['toColony']], tMod + 1] <- 
     pop$I[event[['toClass']], event[['toColony']], tMod] + 1
 
-  pop <- transRates(pop, tMod + 1)
+  pop <- transRates(pop, tMod + 1, event)
   
   pop <- waitingTime(pop, tMod)
 
+  return(pop)
+}
+
+
+#' Calculate new transition rates.
+#'
+#'
+#'@inheritParams randEvent
+#'@param dispersal Logical, is the event a dispersal event?
+#'@name transRates
+#'@family initialRates
+#'@export 
+
+
+transRates <- function(pop, t, event){
+
+  colony <- event[c('fromColony', 'toColony')]
+  # Need a value for colony. As births only have toColony and deaths only have fromcolony
+  #   have to do this messy step.
+  #   If both exists, use from colony. But they'll be the same unless dispersal and then colony isn't used.
+  colony <- (colony[!is.na(colony)])[1]
+
+  # Infection from which class to which class.
+  if(event[1] == 'dispersal'){
+    rate <- c(birthD(pop, t), deathD(pop, t),  infectionD(pop, t), coinfectionD(pop, t), dispersalD(pop, t))
+    if(pop$models$model == 'SIS'){
+      rate <- c(rate, recoveryD(pop, t))
+    }
+    pop$transitions$rate <- rate
+
+  } else {
+    pop$transitions$rate[pop$transitions$type == birth & pop$transitions$toColony == colony] <- birthR(pop, t, colony)
+
+    rate <- c( deathR(pop, t, colony),  infectionR(pop, t, colony), coinfectionR(pop, t, colony), dispersalR(pop, t, colony))
+    if(pop$models$model == 'SIS'){
+      rate <- c(rate, recoveryR(pop, t, colony))
+    }  
+    pop$transitions$rate[identical(pop$transition$fromColony, colony)] <- rate
+  }
+  
+
+  # Reculculate total rate.
+  pop$totalRate <- sum(pop$transitions$rate)			
   return(pop)
 }
 
@@ -162,17 +206,9 @@ waitingTime <- function(pop, t){
 
 
 
-#' Calculate new transition rates.
-#'
-#'
-#'@inheritParams randEvent
-#'@name transRates
-#'@family initialRates
-#'@export 
 
 
-transRates <- function(pop, t){
-
+<<<<<<< HEAD
   # Infection from which class to which class.
 
   rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
@@ -286,6 +322,8 @@ recoveryR <- function(pop, t){
   curPop <- pop$I[, , t]
   return(pop$parameters['recovery'] * curPop[recoveryTrans])
 }
+=======
+>>>>>>> 216f90d24664ec5867094c6bc29901eb05da8f91
 
 
 
