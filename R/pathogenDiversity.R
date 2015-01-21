@@ -52,7 +52,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 	}
 
   pop$sample[, , 1] <- pop$I[, , 1]
-  pop <- transRates(pop, 1, 'dispersal')
+  pop <- transRates(pop, 1)
 
   assert_that(all(pop$I[, , 1] >= 0))
 
@@ -65,7 +65,6 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 #' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
 #'@param pop A population object
 #'@param t Time step. Note the population should be AT time t, going to t+1.
-#'@param tMod Modulus of time and sample rate. 
 #'@name randEvent 
 
 randEvent <- function(pop, t, tMod){
@@ -88,53 +87,10 @@ randEvent <- function(pop, t, tMod){
   pop$I[event[['toClass']], event[['toColony']], tMod + 1] <- 
     pop$I[event[['toClass']], event[['toColony']], tMod] + 1
 
-  pop <- transRates(pop, tMod + 1, event)
+  pop <- transRates(pop, tMod + 1)
   
   pop <- waitingTime(pop, tMod)
 
-  return(pop)
-}
-
-
-#' Calculate new transition rates.
-#'
-#'
-#'@inheritParams randEvent
-#'@param dispersal Logical, is the event a dispersal event?
-#'@name transRates
-#'@family initialRates
-#'@export 
-
-
-transRates <- function(pop, t, event){
-
-  colony <- event[c('fromColony', 'toColony')]
-  # Need a value for colony. As births only have toColony and deaths only have fromcolony
-  #   have to do this messy step.
-  #   If both exists, use from colony. But they'll be the same unless dispersal and then colony isn't used.
-  colony <- (colony[!is.na(colony)])[1]
-
-  # Infection from which class to which class.
-  if(event[1] == 'dispersal'){
-    rate <- c(birthD(pop, t), deathD(pop, t),  infectionD(pop, t), coinfectionD(pop, t), dispersalD(pop, t))
-    if(pop$models$model == 'SIS'){
-      rate <- c(rate, recoveryD(pop, t))
-    }
-    pop$transitions$rate <- rate
-
-  } else {
-    pop$transitions$rate[pop$transitions$type == birth & pop$transitions$toColony == colony] <- birthR(pop, t, colony)
-
-    rate <- c( deathR(pop, t, colony),  infectionR(pop, t, colony), coinfectionR(pop, t, colony), dispersalR(pop, t, colony))
-    if(pop$models$model == 'SIS'){
-      rate <- c(rate, recoveryR(pop, t, colony))
-    }  
-    pop$transitions$rate[identical(pop$transition$fromColony, colony)] <- rate
-  }
-  
-
-  # Reculculate total rate.
-  pop$totalRate <- sum(pop$transitions$rate)			
   return(pop)
 }
 
@@ -147,21 +103,22 @@ transRates <- function(pop, t, event){
 
 #'@export
 #'@name runSim
-#'@inheritParams randEvent
-#'@param time The event number to run the simulation until.
+#'@param pop A MetapopEpi object
+#'@param start The event number to run the simulation until.
+#'@param end how long to run the simulation until.
 
-runSim <- function(pop, time = 'end'){
+runSim <- function(pop, end = 'end', start = 1){
 
-  assert_that(is.count(time) | time == 'end')
+  assert_that(is.count(end) | end == 'end')
 
-  if (time == 'end'){
-    time <- pop$parameters['events']
+  if (end == 'end'){
+    end <- pop$parameters['events']
   }
   
 
   pb <- txtProgressBar(1, pop$parameters['events'], style = 3)
     
-  for (t in 1:time){
+  for (t in start:end){
 
     
 
@@ -202,6 +159,9 @@ waitingTime <- function(pop, t){
 
 
 
+
+
+
 #' Calculate new transition rates.
 #'
 #'
@@ -217,7 +177,7 @@ transRates <- function(pop, t){
 
   rate <- c(birthR(pop, t), deathR(pop, t),  infectionR(pop, t), coinfectionR(pop, t), dispersalR(pop, t))
 
-  if(pop$models$model == 'SIS'){
+  if(pop$models$model == 'SIS' | pop$models$model == 'SIR'){
     rate <- c(rate, recoveryR(pop, t))
   }
   
@@ -329,7 +289,6 @@ recoveryR <- function(pop, t){
 
 
 
-
 #' Find possible possible infection transitions.
 #'
 #'
@@ -338,9 +297,18 @@ recoveryR <- function(pop, t){
 #'@family initialRates
 #' 
 infectionTrans <- function(pop){
-  transMatr <- matrix(0, ncol = pop$nClasses, nrow = pop$nClasses)                 
-  for(i in 1:pop$nClasses){
-    for(j in 1:pop$nClasses){
+
+  # Parameter nClasses is all classes. Only want to use S + I classes
+  #   So reduce by 1 if SIR
+  if(pop$models$model == 'SIR'){ 
+    infClasses <- pop$nClasses - 1
+  } else {
+    infClasses <- pop$nClasses
+  }              
+
+  transMatr <- matrix(0, ncol = infClasses, nrow = pop$nClasses)                 
+  for(i in 1:infClasses){
+    for(j in 1:infClasses){
       setDiff <- length(setdiff(pop$diseaseList[[j]], pop$diseaseList[[i]]))==1
       increasing <- all(pop$diseaseList[[i]] %in% pop$diseaseList[[j]])
       if(setDiff & increasing){transMatr[i,j] <- 1 }
