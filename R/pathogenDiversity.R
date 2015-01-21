@@ -202,10 +202,16 @@ waitingTime <- function(pop, t){
 
 
 
+#' Calculate new transition rates.
+#'
+#'
+#'@inheritParams randEvent
+#'@name transRates
+#'@family initialRates
+#'@export 
 
 
-
-
+transRates <- function(pop, t){
 
   # Infection from which class to which class.
 
