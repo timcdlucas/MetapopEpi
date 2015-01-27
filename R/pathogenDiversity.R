@@ -284,7 +284,7 @@ recoveryR <- function(pop, t){
   # Indices (note reversed order of columns)
   recoveryTrans <- as.matrix(pop$transitions[pop$transitions$type == 'recovery', c(3,2)])
   curPop <- pop$I[, , t]
-  return(pop$parameters['recovery'] * curPop[recoveryTrans])
+  return(pop$parameters['recovery'] * curPop[recoveryTrans] * pop$nInfections[recoveryTrans[,1]])
 }
 
 
