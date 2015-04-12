@@ -10,22 +10,38 @@
 #'@param lwd Relative line width. This value is scaled to a reasonable value.
 #'
 #'@name plotColonyNet
-#'@family viz 
 #'@export
 
-plotColonyNet <- function(pop, lwd=2){
+plotColonyNet <- function(pop, lwd = 1.4, axes = FALSE, col = 1, ...){
 	assert_that(is.numeric(pop$locations), all(c('locations', 'models') %in% names(pop)))
 				
 	E <- edgeList(pop)
-	edgeLocations <- cbind(pop$locations[E[,1],], pop$locations[E[,2],], lwd*E[,3]/max(E[,3]))			
+	edgeLocations <- cbind(pop$locations[E[, 1],], pop$locations[E[, 2], ], 
+    lwd * E[, 3] / max(E[, 3]))		
+
+  if(axes){
+    ax <- NULL
+    fr <- TRUE
+    xlab <- 'lon'
+    ylab <- 'lat'
+  } else {
+    ax <- 'n'
+    fr <- FALSE
+    xlab <- ''
+    ylab <- ''
+  }	
+
+  cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
 
 	
-	par(mar=c(5,5,1,1)+0.3)
-	plot(pop$locations, pch=16, col=brewer.pal(3,'Set1')[1], cex=1,
-		ylab='lat', xlab='lon')
+	par(mar=c(5, 5, 1, 1) + 0.3, ...)
+	plot(pop$locations, pch = 16, col = cols[1], cex = 1,
+		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr)
 	
-	apply(edgeLocations,1, function(x) lines(x[c(1,3)],x[c(2,4)], lwd=x[5]))
-  points(pop$locations, pch=16, col=brewer.pal(3,'Set1')[1], cex=3)
+	apply(edgeLocations, 1, function(x) 
+    lines(x[c(1, 3)], x[c(2, 4)], lwd = x[5], col = grey(runif(1, 0, 0.4))))
+  points(pop$locations, pch = 16, col = cols[1], cex = 3)
+  points(pop$locations, pch = 16, col = cols[2], cex = 2.5)
 }
 
 
@@ -36,7 +52,7 @@ plotColonyNet <- function(pop, lwd=2){
 #'@param weightMatrix A matrix 
 #'
 #'@name plotColonyNet
-#'@family viz 
+
 
 
 colonyHeat <- function(weightMatrix){
@@ -51,7 +67,6 @@ colonyHeat <- function(weightMatrix){
 #'@inheritParams seedPathogen
 #'
 #'@name popHeat
-#'@family viz 
 #'@export
 
 popHeat <- function(pop){
@@ -184,7 +199,7 @@ pPop <- function(pop, start = 1, end = NULL, o = FALSE){
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nColonies']))
 
-  longd <- melt(d, id = 'time', variable.name = 'Colony')
+  longd <- melt(d, id = 'time')
   longd <- longd[longd$value != 0, ]
 
   if(o){
@@ -194,7 +209,7 @@ pPop <- function(pop, start = 1, end = NULL, o = FALSE){
   }
 
   ggplot(data = longd,
-       aes(x = time, y = value, colour = Colony)) +
+       aes(x = time, y = value, colour = variable)) +
     geom_line() +
     ylab('Individuals') + 
     xlab('Time') + 
@@ -308,9 +323,9 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
   
 
 
-  longd <- melt(d, id = 'time' , variable.name = 'disease')
+  longd <- melt(d, id = 'time' )
 
-  longd$nPath <- nPaths[longd$disease]
+  longd$nPath <- nPaths[longd$variable]
 
   longd <- longd[longd$value != 0, ]
   
@@ -329,8 +344,8 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
     xlab('Time') + 
     theme_minimal() +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
-    labs(colour = "Coinfection lvl") +
-    scale_color_brewer(palette="Dark2")
+    labs(colour = "Coinfection lvl") #+
+    #scale_color_brewer(palette="Dark2")
 
 }
 
@@ -368,7 +383,7 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
 
   greySelection <- grey(seq(0.2, 0.6, length.out = pop$parameters['nPathogens']))
 
-  longd <- melt(d, id = 'time', variable.name = 'Pathogen')
+  longd <- melt(d, id = 'time')
   longd <- longd[longd$value != 0, ]
 
 
@@ -379,7 +394,8 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
   }
 
   ggplot(data = longd,
-       aes(x = time, y = value, colour = Pathogen)) +
+    aes(x = time, y = value, colour = variable)) +
+    facet_grid(variable ~ .) +
     geom_line() +
     ylab('Individuals') + 
     xlab('Time') + 
@@ -414,7 +430,7 @@ pSI <- function(pop, start = 1, end = NULL){
   longd <- longd[longd$value != 0, ]
 
   ggplot(data = longd,
-       aes(x = time, y = value, colour = SI_class)) +
+       aes(x = time, y = value, colour = variable)) +
     geom_line() +
     ylab('Individuals') + 
     xlab('Time') + 
@@ -478,11 +494,11 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   
 
 
-  longd <- melt(d, id = 'time' , variable.name = 'disease')
+  longd <- melt(d, id = 'time')
 
   longd <- longd[longd$value != 0, ]
 
-  disClass <-  sub('\\..*$', '', as.character(longd$disease)) %>% as.numeric
+  disClass <-  sub('\\..*$', '', as.character(longd$variable)) %>% as.numeric
 
   longd$nPath <- nPaths[disClass]
 
@@ -496,14 +512,15 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   cols <- brewer.pal(8, 'Dark2')
 
   ggplot(data = longd,
-       aes(x = time, y = value, group = disease, colour = factor(longd$nPath))) +
+       aes(x = time, y = value, group = variable, colour = factor(longd$nPath))) +
     geom_line(alpha = 0.6) +
     ylab('Individuals') + 
     xlab('Time') + 
     theme_minimal() +
     scale_y_continuous(limits = c(ymin, max(longd$value))) +
-    labs(colour = "Coinfection lvl") +
-    scale_color_brewer(palette="Dark2") 
+    labs(colour = "Coinfection lvl") 
+    #+
+    #scale_color_brewer(palette="Dark2") 
 
 }
 
@@ -551,9 +568,9 @@ pSIR <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   
 
 
-  longd <- melt(d, id = 'time' , variable.name = 'disease')
+  longd <- reshape2::melt(d, id = 'time')
 
-  longd$nPath <- nPaths[longd$disease]
+  longd$nPath <- nPaths[longd$variable]
 
   longd <- longd[longd$value != 0, ]
   
@@ -566,7 +583,7 @@ pSIR <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   cols <- brewer.pal(8, 'Dark2')
 
   ggplot(data = longd,
-       aes(x = time, y = value, group = disease, colour = factor(nPath))) +
+       aes(x = time, y = value, group = variable, colour = factor(nPath))) +
     geom_line() +
     ylab('Individuals') + 
     xlab('Time') + 
