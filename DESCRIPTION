@@ -15,7 +15,8 @@ Imports:
     magrittr,
     igraph,
     reshape2,
-    ggplot2
+    ggplot2,
+    palettetown
 Suggests:
     knitr
 VignetteBuilder: knitr
