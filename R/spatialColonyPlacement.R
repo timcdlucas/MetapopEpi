@@ -14,7 +14,7 @@
 #'@param N Number of colonies. A single, positive integer.
 #'@param space The size of space as given by the length of one side of square space.
 #'@name uniformColony
-#'@family colony.placement
+
 
 uniformColony <- function(N, space){
 	assert_that(N%%1==0, N>0, is.numeric(space), space>0)
@@ -28,7 +28,7 @@ uniformColony <- function(N, space){
 #'
 #'@inheritParams uniformColony
 #'@name circleColony
-#'@family colony.placement
+
 
 circleColony <- function(N, space){     
 	assert_that(N%%1==0, N>0, is.numeric(space), space>0)

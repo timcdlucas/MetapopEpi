@@ -12,7 +12,7 @@
 #'@inheritParams exponentialPop 
 #'@param colonySize The size of all colonies
 #'@name equalPop
-#'@family colonysize.distribution
+
 
 equalPop <- function(nColonies, colonySize){
 	S <- rep(colonySize, nColonies)
@@ -26,7 +26,7 @@ equalPop <- function(nColonies, colonySize){
 #'@param nColonies The number of colonies. A single integer. 
 #'@param meanColonySize Mean colony size. 
 #'@name exponentialPop
-#'@family colonysize.distribution
+
 
 exponentialPop <- function(nColonies, meanColonySize){
 	S <- rexp(nColonies, 1/meanColonySize) %>% ceiling
@@ -37,7 +37,7 @@ exponentialPop <- function(nColonies, meanColonySize){
 #'
 #'@inheritParams exponentialPop 
 #'@name poissonPop
-#'@family colonysize.distribution
+
 poissonPop <- function(nColonies, meanColonySize){
 	S <- rpois(nColonies, meanColonySize)
 	return(S)

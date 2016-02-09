@@ -24,7 +24,7 @@ NULL
 #'@param diffCols Logical. If True, pathogen infections are forced to be in different colonies. Allows n to be as big as meanColonySize but requires nColonies > nPathogens
 #'
 #'@return An update object of same structure as from makePop
-#'@family Run,sims
+
 #'
 #'@export
 #'@name seedPathogen
@@ -35,6 +35,11 @@ NULL
 
 seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 	
+  assert_that(length(n) == 1 | length(n) == length(pathogens))
+  if(length(n) == 1){
+    n <- rep(n, length(pathogens))
+  }
+
   assert_that(all(sapply(pathogens, is.count)))
 	# can't seed more species than were initiliased.
 	assert_that(max(pathogens) <= pop$parameters['nPathogens'])
@@ -46,9 +51,9 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 	for(path in 1:length(pathogens)){
 
     
-		pop$I[pathogens[path] + 1, r[path], 1] <- pop$I[pathogens[path] + 1, r[path], 1] + n
+		pop$I[pathogens[path] + 1, r[path], 1] <- pop$I[pathogens[path] + 1, r[path], 1] + n[path]
 		# keep pop size constant
-		pop$I[1, r[path], 1] <- pop$I[1, r[path], 1] - n
+		pop$I[1, r[path], 1] <- pop$I[1, r[path], 1] - n[path]
 	}
 
   pop$sample[, , 1] <- pop$I[, , 1]
@@ -74,7 +79,8 @@ randEvent <- function(pop, t, tMod){
   # Using precalcuated random uniforms in [0,1], pop$randEventU
   # Find which interval this falls in as quick way to select value
   # Should have a think about open and closed intervalsfromClass toColony toClass rate
-
+  
+  
   event <- pop$transitions[findInterval(pop$randEventU[t] * pop$totalRate, cumsum(c(0, pop$transitions$rate))), ]
 
 
@@ -86,9 +92,10 @@ randEvent <- function(pop, t, tMod){
     pop$I[event[['fromClass']], event[['fromColony']], tMod ] - 1
   pop$I[event[['toClass']], event[['toColony']], tMod + 1] <- 
     pop$I[event[['toClass']], event[['toColony']], tMod] + 1
+  
 
   pop <- transRates(pop, tMod + 1)
-  
+
   pop <- waitingTime(pop, tMod)
 
   return(pop)
@@ -164,10 +171,10 @@ waitingTime <- function(pop, t){
 
 #' Calculate new transition rates.
 #'
-#'
-#'@inheritParams randEvent
+#'@param pop A MetapopEpi object
+#'@param t Time. tMod + 1 so if time = 1000, sample = 1000, t here is 1
 #'@name transRates
-#'@family initialRates
+
 #'@export 
 
 
@@ -200,7 +207,7 @@ transRates <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name birthR
-#'@family initialRates
+
 #' 
 birthR <- function(pop, t){ 
   return(pop$parameters['birth']*colSums(pop$I[,,t]) )
@@ -213,7 +220,7 @@ birthR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name deathR
-#'@family initialRates
+
 #' 
 deathR <- function(pop, t){
   return(as.vector(t(pop$I[, , t] * (pop$parameters['death'] + pop$nInfections * pop$parameters['infectDeath']))))
@@ -225,7 +232,7 @@ deathR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name dispersalR
-#'@family initialRates
+
 #' 
 dispersalR <- function(pop, t){
   return(pop$parameters['dispersal']*as.vector(t(pop$I[, pop$edgeList[,1], t])*pop$adjacency[pop$edgeList]))
@@ -237,7 +244,7 @@ dispersalR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name infectionR
-#'@family initialRates
+
 #'@return nColonies * nPathogens vector Grouped by pathogen
 #' 
 
@@ -251,7 +258,7 @@ infectionR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name coinfectionR
-#'@family initialRates
+
 #'@return nColonies * something. Grouped by to class, then from class
 #' 
 
@@ -275,7 +282,7 @@ coinfectionR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name infectionR
-#'@family initialRates
+
 #'@return nColonies * nPathogens vector Grouped by pathogen
 #' 
 
@@ -294,7 +301,7 @@ recoveryR <- function(pop, t){
 #'
 #'@inheritParams randEvent
 #'@name infectionTrans
-#'@family initialRates
+
 #' 
 infectionTrans <- function(pop){
 
@@ -323,7 +330,7 @@ infectionTrans <- function(pop){
 #'
 #'@inheritParams randEvent
 #'@name findDiseaseAdded
-#'@family initialRates
+
 #' 
 findDiseaseAdded <- function(pop){
 
@@ -361,7 +368,7 @@ findDiseaseAdded <- function(pop){
 #'@inheritParams weightMatrix
 #'
 #'@name adjMatrix
-#'@family Networks 
+
 
 
 adjMatrix <- function(locations, maxDistance){
@@ -388,7 +395,7 @@ adjMatrix <- function(locations, maxDistance){
 #'@param kern Character, giving the name of the distance kernel to be used.
 #'
 #'@name weightMatrix
-#'@family Networks 
+
 
 weightMatrix <- function(locations, maxDistance, kern){
 	assert_that(NCOL(locations)==2, NROW(locations)>0, is.numeric(locations))
@@ -408,7 +415,7 @@ weightMatrix <- function(locations, maxDistance, kern){
 #'
 #'@seealso \code{\link{checkIfGiant}}
 #'@name numComponents
-#'@family Networks 
+
 numComponents <- function(W){
 	assert_that(is.matrix(W), NROW(W)==NCOL(W), is.numeric(W))
                     A <- (W > 0)*1
@@ -426,7 +433,7 @@ numComponents <- function(W){
 #'
 #'@seealso \code{\link{numComponents}}
 #'@name checkIfGiant
-#'@family Networks 
+
 checkIfGiant <- function(A){
 	c <- numComponents(A)
 	cig <- if(c==1){ TRUE } else {FALSE}
@@ -441,7 +448,7 @@ checkIfGiant <- function(A){
 #'@inheritParams weightMatrix
 #'
 #'@name popMatrix
-#'@family Networks 
+
 popMatrix <- function(locations, maxDistance, kern){
 		W <- weightMatrix(locations, maxDistance, paste0(kern, 'Kern')) 
 		A <- W/rowSums(W)
@@ -454,7 +461,7 @@ popMatrix <- function(locations, maxDistance, kern){
 #'@inheritParams seedPathogen
 #'
 #'@name netDegree
-#'@family Networks 
+
 #'@export
 netDegree <- function(pop){	
 	A <- (pop$adjacency>0)*1
@@ -468,7 +475,7 @@ netDegree <- function(pop){
 #'@inheritParams seedPathogen
 #'
 #'@name netStrength
-#'@family Networks 
+
 #'@export
 netStrength <- function(pop){
 	return(rowSums(pop$adjacency))
@@ -484,7 +491,7 @@ netStrength <- function(pop){
 #'@inheritParams seedPathogen
 #'
 #'@name edgeList
-#'@family Networks 
+
 
 edgeList <- function(pop){
 	assert_that(is.numeric(pop$locations), NCOL(pop$locations)==2, NROW(pop$locations)>0)

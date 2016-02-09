@@ -30,7 +30,6 @@
 #'   adjacency matric for the population network. 'waiting' is the interevent times. diseaseClasses, diseaseList 
 #'   and whichClasses are mostly references for the relationships between multidisease states.
 #'@name makePop
-#'@family Run.sims
 #'@export
 #'@examples 
 #'p <- makePop()
@@ -191,7 +190,6 @@ makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space =
 #'
 #'@inheritParams randEvent
 #'@name initTransitions
-#'@family initialRates
 #'@export 
 
 

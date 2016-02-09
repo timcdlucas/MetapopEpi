@@ -10,7 +10,7 @@
 #'@param thresh A maximum distance above which colonies are not connected.
 #'
 #'@name inverseKern
-#'@family kernels 
+
 
 inverseKern <- function(distMatrix, thresh){
 	t <- max(distMatrix)/thresh
@@ -27,7 +27,7 @@ inverseKern <- function(distMatrix, thresh){
 #'@inheritParams inverseKern
 #'
 #'@name linearKern
-#'@family kernels 
+
 
 linearKern <- function(distMatrix, thresh){
 	t <- max(distMatrix) - thresh
@@ -44,7 +44,7 @@ linearKern <- function(distMatrix, thresh){
 #'@inheritParams inverseKern
 #'
 #'@name unweightedKern
-#'@family kernels 
+
 unweightedKern <- function(distMatrix, thresh){
   W <- (distMatrix<thresh)*1
   diag(W) <- 0

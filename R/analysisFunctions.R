@@ -23,10 +23,19 @@ findDisDistr <- function(pop, final = 10){
 
 findCoinfDistr <- function(pop, final = 10){
   is.count(final)
+
+
+
   end <- pop$parameters['events']/pop$parameters['sample'] + 1
   finalI <- apply(pop$sample[, , (end - final):end], 1, mean)
 
   coinf <- sapply(pop$diseaseList, length)
+
+  # If SIR model, then pop$diseaseList does not include R class
+  #   Need to add one value to coinf vector.
+  if(pop$models$model == 'SIR'){
+    coinf <- c(coinf, 0)
+  }
   
   finalCoinf <- aggregate(finalI, by = list(coinf), FUN = sum)[, 2]
 
