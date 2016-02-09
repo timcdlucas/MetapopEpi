@@ -8,11 +8,21 @@
 #'   
 #'@inheritParams seedPathogen
 #'@param lwd Relative line width. This value is scaled to a reasonable value.
-#'
+#'@param axes If set to FALSE, don't plot any axes
+#'@param col Point colour
+#'@param outCol The colour for a line outlining points. If NULL, no outer line is plotted
+#'@param area The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both. 
+#'@param lineCol Line colour.
 #'@name plotColonyNet
 #'@export
 
-plotColonyNet <- function(pop, lwd = 1.4, axes = FALSE, col = 1, ...){
+plotColonyNet <- function(pop, 
+                          lwd = 1.2, 
+                          axes = FALSE, 
+                          col = 1, 
+                          area = NULL, 
+                          alpha = 0.1, ...){
+
 	assert_that(is.numeric(pop$locations), all(c('locations', 'models') %in% names(pop)))
 				
 	E <- edgeList(pop)
@@ -31,17 +41,32 @@ plotColonyNet <- function(pop, lwd = 1.4, axes = FALSE, col = 1, ...){
     ylab <- ''
   }	
 
-  cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
+  # If given plot size, set ylim and xlim
+  if(!is.null(area)){
+    if(length(area) == 2){
+      xlim <- c(0, area[1])
+      ylim <- c(0, area[2])
+    } else {
+      xlim <- c(0, area)
+      ylim <- c(0, area)
+    }
+  }
 
-	
-	par(mar=c(5, 5, 1, 1) + 0.3, ...)
-	plot(pop$locations, pch = 16, col = cols[1], cex = 1,
-		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr)
+  if(col == 1){
+    cols <- pokepal('vileplume')[c(9, 3)]
+  }
+
+  if(col == 2){
+    cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
+  }
+	par(...)
+	plot(pop$locations, pch = 16, col = cols[1], cex = 0.1,
+		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr, ylim = ylim, xlim = xlim)
 	
 	apply(edgeLocations, 1, function(x) 
-    lines(x[c(1, 3)], x[c(2, 4)], lwd = x[5], col = grey(runif(1, 0, 0.4))))
-  points(pop$locations, pch = 16, col = cols[1], cex = 3)
-  points(pop$locations, pch = 16, col = cols[2], cex = 2.5)
+    lines(x[c(1, 3)], x[c(2, 4)], lwd = x[5], col = alpha(grey(runif(1, 0, 0.4)), alpha)))
+  points(pop$locations, pch = 21, col = cols[1], bg = cols[2],  cex = 3)
+
 }
 
 
