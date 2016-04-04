@@ -1,14 +1,14 @@
 Package: MetapopEpi
 Type: Package
-Title: A package containing functions to run multi pathogen, metapopulation
+Title: Functions to run multipathogen, metapopulation
     epidemiological simulations.
 Version: 0.0.1
 Date: 2014-11-02
 Author: Tim CD Lucas
 Maintainer: Tim CD Lucas <timcdlucas@gmail.com>
-Description: A package for running multipathogen, metapopulation epidemiology
+Description: Run multipathogen, metapopulation epidemiology
     models.
-License: License file
+License: MIT + file LICENSE
 Imports:
     assertthat,
     RColorBrewer,
