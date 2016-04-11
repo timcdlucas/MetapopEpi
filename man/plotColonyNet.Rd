@@ -23,6 +23,8 @@ colonyHeat(weightMatrix)
 
 \item{alpha}{Transparency level in range (0, 1).}
 
+\item{...}{Further arguments to \code{par}.}
+
 \item{weightMatrix}{A matrix}
 }
 \description{

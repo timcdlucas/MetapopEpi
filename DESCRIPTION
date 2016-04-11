@@ -1,7 +1,7 @@
 Package: MetapopEpi
 Type: Package
 Title: Functions to run multipathogen, metapopulation
-    epidemiological simulations.
+    epidemiological simulations
 Version: 0.0.1
 Date: 2014-11-02
 Author: Tim CD Lucas
@@ -12,7 +12,6 @@ License: MIT + file LICENSE
 Imports:
     assertthat,
     RColorBrewer,
-    magrittr,
     igraph,
     reshape2,
     ggplot2,

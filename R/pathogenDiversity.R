@@ -7,7 +7,7 @@
 #'@name MetapopEpi
 #'@author Tim CD Lucas
 #'@docType package
-#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape2 palettetown
+#'@import assertthat RColorBrewer igraph ggplot2 reshape2 palettetown
 
 NULL
 

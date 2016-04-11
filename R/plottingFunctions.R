@@ -12,6 +12,7 @@
 #'@param col Point colour
 #'@param area The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both. 
 #'@param alpha Transparency level in range (0, 1).
+#'@param ... Further arguments to \code{par}.
 #'@name plotColonyNet
 #'@export
 
@@ -127,7 +128,7 @@ pSus <- function(pop, start = 1, end = NULL, o = FALSE){
     end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
-  d <- cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])))
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -170,9 +171,9 @@ pInf <- function(pop, start = 1, end = NULL, o = FALSE){
     end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
   
-  I <- pop$sample[2:NROW(pop$sample),,] %>% apply(., c(2,3), sum) %>% t
+  I <- t(apply(pop$sample[2:NROW(pop$sample),,], c(2,3), sum))
 
-  d <- cbind(I, cumsum(pop$sampleWaiting)) %>% data.frame
+  d <- data.frame(cbind(I, cumsum(pop$sampleWaiting)))
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -221,9 +222,9 @@ pPop <- function(pop, start = 1, end = NULL, o = FALSE){
     end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
-  I <- pop$sample[, , start:end] %>% apply(., c(2,3), sum) %>% t
+  I <- t(apply(pop$sample[, , start:end], c(2,3), sum))
 
-  d <- cbind(I, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(I, cumsum(pop$sampleWaiting[start:end])))
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -274,11 +275,11 @@ pAll <- function(pop, start = 1, end = NULL, o = FALSE){
   z2 <- do.call(rbind, z)
 
   
-  d <- cbind(t(z2), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(t(z2), cumsum(pop$sampleWaiting[start:end])))
   d <- cbind(d, 'disease')
   colnames(d)[c(NCOL(d) - 1, NCOL(d))] <- c('time', 'state')
 
-  s <- cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  s <- data.frame(cbind(t(pop$sample[1, , start:end]), cumsum(pop$sampleWaiting[start:end])))
   s <- cbind(s, 'susceptible')
   colnames(s)[c(NCOL(s) - 1, NCOL(s))] <- c('time', 'state')
 
@@ -287,7 +288,7 @@ pAll <- function(pop, start = 1, end = NULL, o = FALSE){
   
   longAll <- rbind(longd, longs)
 
-  longAll$colonyState <- paste0(longAll$colony, longAll$state) %>% factor
+  longAll$colonyState <- factor(paste0(longAll$colony, longAll$state))
   longAll <- longAll[longAll$value != 0, ]
 
   twoGroups <- rep(brewer.pal(3, 'Set1')[2], length(table(longAll$colonyState)))
@@ -345,7 +346,7 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
   z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
    
   
-  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(z, cumsum(pop$sampleWaiting[start:end])))
 
   nPaths <- sapply(pop$diseaseList, length)[removeS]
 
@@ -409,7 +410,7 @@ pDis <- function(pop, start = 1, end = NULL, o = FALSE){
 
   I <- do.call(cbind, I)
 
-  d <- cbind(I, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(I, cumsum(pop$sampleWaiting[start:end])))
   colnames(d)[NCOL(d)] <- 'time'
 
 
@@ -455,7 +456,7 @@ pSI <- function(pop, start = 1, end = NULL){
     end <- pop$parameters['events']/pop$parameters['sample'] + 1
   }
 
-  I <- cbind(apply(pop$sample[-1, , start:end], 3, sum), apply(pop$sample[1, , start:end], 2, sum), cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  I <- data.frame(cbind(apply(pop$sample[-1, , start:end], 3, sum), apply(pop$sample[1, , start:end], 2, sum), cumsum(pop$sampleWaiting[start:end])))
   colnames(I) <- c('I', 'S', 'time')
 
   longd <- melt(I, id = 'time', variable.name = 'SI_class')
@@ -512,13 +513,13 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
 
   #z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
    
-  z <- do.call(rbind, lapply(1:dim(pop$sample)[2],  function(i) pop$sample[,i,])) %>% t
+  z <- t(do.call(rbind, lapply(1:dim(pop$sample)[2],  function(i) pop$sample[,i,])))
   
-  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(z, cumsum(pop$sampleWaiting[start:end])))
 
   nPaths <- sapply(pop$diseaseList, length)[removeS]
 
-  disCol <- outer(1:nClass, 1:pop$parameters['nColonies'], paste, sep=".") %>% as.vector
+  disCol <- as.vector(outer(1:nClass, 1:pop$parameters['nColonies'], paste, sep="."))
   nPathsAll <- rep(nPaths[1:nClass], each = pop$parameters['nColonies'])
             
 
@@ -530,7 +531,7 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
 
   longd <- longd[longd$value != 0, ]
 
-  disClass <-  sub('\\..*$', '', as.character(longd$variable)) %>% as.numeric
+  disClass <-  as.numeric(sub('\\..*$', '', as.character(longd$variable)))
 
   longd$nPath <- nPaths[disClass]
 
@@ -592,7 +593,7 @@ pSIR <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
   z <- t(apply(pop$sample[removeS, , start:end], c(1, 3), sum))
    
   
-  d <- cbind(z, cumsum(pop$sampleWaiting[start:end])) %>% data.frame
+  d <- data.frame(cbind(z, cumsum(pop$sampleWaiting[start:end])))
 
   nPaths <- c(sapply(pop$diseaseList, length), 'R')[removeS]
 
