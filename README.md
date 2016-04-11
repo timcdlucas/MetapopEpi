@@ -1,3 +1,9 @@
+MetapopEpi
+==========
+
+[![Build Status](https://travis-ci.org/timcdlucas/MetapopEpi.svg)](https://travis-ci.org/timcdlucas/MetapopEpi)
+[![codecov.io](https://codecov.io/github/timcdlucas/MetapopEpi/coverage.svg?branch=master)](https://codecov.io/github/timcdlucas/MetapopEpi?branch=master)
+
 
 This a package for running metapopulation, multipathogen simulations. 
 
