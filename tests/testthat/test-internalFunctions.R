@@ -99,7 +99,7 @@ test_that('waitingTime works correctly', {
 test_that('transRates works', {
   pop <- makePop(model = 'SI', events = 20, sample = 1)
 
-  pop2 <- transRates(pop, 1, 'dispersal')
+  pop2 <- transRates(pop, 1)
 
   expect_equal(pop$transitions, pop2$transitions)
 
@@ -115,7 +115,7 @@ test_that('transRates works', {
 
   pop3$I[, , 1] <- c(1:16)
 
-  pop4 <- transRates(pop3, 1, 'dispersal')
+  pop4 <- transRates(pop3, 1)
 
   # Dispersal, population * dispersal rate
   expect_true(all(pop4$transitions$rate[pop4$transitions$type == 'dispersal' & pop4$transitions$fromColony == 1] == 1:8 * 2))
@@ -137,7 +137,7 @@ test_that('transRates works', {
   pop6 <- pop5
   pop6$I[1:2, 1, 1] <- 1
 
-  pop6Trans <- transRates(pop6, 1, 'dispersal')
+  pop6Trans <- transRates(pop6, 1)
 
   inf <- pop6Trans$transitions$rate[pop6Trans$transitions$fromClass == 1 & pop6Trans$transitions$toClass == 2 & pop6Trans$transitions$toColony == 1 ] 
   inf <- inf[!is.na(inf)]
@@ -150,7 +150,7 @@ test_that('transRates works', {
   pop7 <- pop5
   pop7$I[c(1:2, 5), 1, 1] <- 1
 
-  pop7Trans <- transRates(pop7, 1, 'dispersal')
+  pop7Trans <- transRates(pop7, 1)
 
   inf <- pop7Trans$transitions$rate[pop7Trans$transitions$fromClass == 1 & pop7Trans$transitions$toClass == 2 & pop7Trans$transitions$toColony == 1 ] 
   inf <- inf[!is.na(inf)]
@@ -163,7 +163,7 @@ test_that('transRates works', {
   pop8 <- pop5
   pop8$I[c(1:3), 1, 1] <- c(0, 1, 1)
 
-  pop8Trans <- transRates(pop8, 1, 'dispersal')
+  pop8Trans <- transRates(pop8, 1)
 
   # 1 -> 1 and 2 (i.e. class 2 to class 5)
   inf <- pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 2 & pop8Trans$transitions$toClass == 5 & pop8Trans$transitions$toColony == 1 ] 
@@ -182,7 +182,7 @@ test_that('transRates works', {
   pop8 <- pop5
   pop8$I[c(2, 3), 1, 1] <- 1
 
-  pop8Trans <- transRates(pop8, 1, 'dispersal')
+  pop8Trans <- transRates(pop8, 1)
 
   inf <- pop8Trans$transitions$rate[pop8Trans$transitions$fromClass == 1 & pop8Trans$transitions$toClass == 2 & pop8Trans$transitions$toColony == 1 ] 
   inf <- inf[!is.na(inf)]
@@ -242,58 +242,58 @@ test_that('All rate calculating functions work.', {
 
   # birthR
 
-  expect_equal(birthD(p, 1), rep(10000, 2))
+  expect_equal(birthR(p, 1), rep(10000, 2))
 
   # birth w/ 0 pop
   p$I[1, , 1] <- 0
-  expect_equal(birthD(p, 1), rep(0, 2))
+  expect_equal(birthR(p, 1), rep(0, 2))
 
   # check adding
   p$I[, , 1] <- 1:8
-  expect_equal(birthD(p, 1), c(sum(1:4), sum(5:8)))
+  expect_equal(birthR(p, 1), c(sum(1:4), sum(5:8)))
 
 
   #deathR
   p$I[, , 1] <- 0
-  expect_equal(deathD(p, 1), rep(0, 8))
+  expect_equal(deathR(p, 1), rep(0, 8))
 
   p$I[, , 1] <- 1:8 
   # fromColony is 1, 2, 1, 2. fromClass is 1,1,2,2
   #   so expect 1:8 by rows.
-  expect_equal(deathD(p, 1), c(1,5,2,6,3,7,4,8) )
+  expect_equal(deathR(p, 1), c(1,5,2,6,3,7,4,8) )
 
   # infectionR
   p$I[, , 1] <- 0
-  expect_equal(infectionD(p, 1), rep(0, 4))
+  expect_equal(infectionR(p, 1), rep(0, 4))
 
   p$I[1, , 1] <- 1:2
-  expect_equal(infectionD(p, 1), rep(0, 4))
+  expect_equal(infectionR(p, 1), rep(0, 4))
 
   p$I[1:2, , 1] <- c(0, 1, 0, 2) # zero susceptibles, infection in both colonies
-  expect_equal(infectionD(p, 1), rep(0, 4))
+  expect_equal(infectionR(p, 1), rep(0, 4))
 
   # both S and I classes positive.
   #   fromColony 1, 2, 1, 2. toClass 2, 2, 3, 3
   p$I[1:2, , 1] <- 1:4
 
   # So expect +ve infections first, then zero (second pathogen) infections after
-  expect_equal(infectionD(p, 1), c(1*2, 3*4, 0, 0))
+  expect_equal(infectionR(p, 1), c(1*2, 3*4, 0, 0))
 
   
   # coinfectionR
   
   p$I[, , 1] <- 0
-  expect_equal(coinfectionD(p, 1), rep(0, 4))
+  expect_equal(coinfectionR(p, 1), rep(0, 4))
 
   p$I[2, , 1] <- 1:2
-  expect_equal(coinfectionD(p, 1), rep(0, 4))
+  expect_equal(coinfectionR(p, 1), rep(0, 4))
 
   p$I[2:3, , 1] <- 1:4
-  expect_equal(coinfectionD(p, 1), c(1*2, 3*4, 1*2, 3*4))
+  expect_equal(coinfectionR(p, 1), c(1*2, 3*4, 1*2, 3*4))
 
   # check adding
   p$I[4, 1, 1] <- 1
-  expect_equal(coinfectionD(p, 1), c(1 * (2 + 1), 3 * 4, (1 + 1) * 2, 3 * 4))
+  expect_equal(coinfectionR(p, 1), c(1 * (2 + 1), 3 * 4, (1 + 1) * 2, 3 * 4))
 
 }) 
 
