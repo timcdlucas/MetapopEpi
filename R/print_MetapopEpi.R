@@ -1,8 +1,8 @@
-#' Print method for objects of class MetapopEpi
-#'
-#'@param p A MetapopEpi object.
-#'@export
-#'@name print.MetapopEpi
+# Print method for objects of class MetapopEpi
+#
+#@param p A MetapopEpi object.
+#@export
+#@name print.MetapopEpi
 
 print.MetapopEpi <- function(p){
   cat('MetapopEpi object.\n\n')
