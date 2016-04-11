@@ -9,6 +9,10 @@ pSus(pop, start = 1, end = NULL, o = FALSE)
 \arguments{
 \item{pop}{A population object}
 
+\item{start}{Time step to start plotting}
+
+\item{end}{Time step to end plotting}
+
 \item{o}{Logical whether to plot from the origin or not}
 }
 \description{

@@ -6,6 +6,9 @@
 \usage{
 \method{print}{MetapopEpi}(p)
 }
+\arguments{
+\item{p}{A MetapopEpi object.}
+}
 \description{
 Print method for objects of class MetapopEpi
 }

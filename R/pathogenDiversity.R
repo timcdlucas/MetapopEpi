@@ -7,7 +7,7 @@
 #'@name MetapopEpi
 #'@author Tim CD Lucas
 #'@docType package
-#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape2
+#'@import assertthat RColorBrewer magrittr igraph ggplot2 reshape2 palettetown
 
 NULL
 
@@ -70,6 +70,7 @@ seedPathogen <- function(pop, pathogens = 1, n = 1, diffCols = TRUE){
 #' Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
 #'@param pop A population object
 #'@param t Time step. Note the population should be AT time t, going to t+1.
+#'@param tMod Time step modulus the \code{sample} argument in \code{makePop}. 
 #'@name randEvent 
 
 randEvent <- function(pop, t, tMod){

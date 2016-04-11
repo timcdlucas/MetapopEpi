@@ -1,5 +1,6 @@
 #' Print method for objects of class MetapopEpi
 #'
+#'@param p A MetapopEpi object.
 #'@export
 #'@name print.MetapopEpi
 

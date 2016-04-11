@@ -21,11 +21,9 @@ colonyHeat(weightMatrix)
 
 \item{area}{The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both.}
 
+\item{alpha}{Transparency level in range (0, 1).}
+
 \item{weightMatrix}{A matrix}
-
-\item{outCol}{The colour for a line outlining points. If NULL, no outer line is plotted}
-
-\item{lineCol}{Line colour.}
 }
 \description{
 Plot showing the colonies, and the edges between them, with line thickness indicating weight.

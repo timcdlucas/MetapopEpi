@@ -10,11 +10,14 @@
 #'@param lwd Relative line width. This value is scaled to a reasonable value.
 #'@param axes If set to FALSE, don't plot any axes
 #'@param col Point colour
-#'@param outCol The colour for a line outlining points. If NULL, no outer line is plotted
 #'@param area The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both. 
-#'@param lineCol Line colour.
+#'@param alpha Transparency level in range (0, 1).
 #'@name plotColonyNet
 #'@export
+
+#Note used
+#@param outCol The colour for a line outlining points. If NULL, no outer line is plotted
+#@param lineCol Line colour.
 
 plotColonyNet <- function(pop, 
                           lwd = 1.2, 
@@ -53,7 +56,7 @@ plotColonyNet <- function(pop,
   }
 
   if(col == 1){
-    cols <- pokepal('vileplume')[c(9, 3)]
+    cols <- palettetown::pokepal('vileplume')[c(9, 3)]
   }
 
   if(col == 2){
@@ -109,6 +112,8 @@ popHeat <- function(pop){
 #'
 #'@param pop A population object
 #'@param o Logical whether to plot from the origin or not
+#'@param start Time step to start plotting
+#'@param end Time step to end plotting
 #'@name pSus
 #'@export
 
@@ -386,6 +391,8 @@ pClass <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE
 
 
 pDis <- function(pop, start = 1, end = NULL, o = FALSE){
+
+  
   
   # Just declare these to avoid CRAN check notes
   value <- colony <- Pathogen <- NULL
@@ -549,7 +556,7 @@ pCol <- function(pop, start = 1, end = NULL, S = TRUE, nPath = TRUE, o = FALSE){
 
 }
 
-
+globalVariables('variable')
 
 
 #' Plot the total number of individuals in each disease class

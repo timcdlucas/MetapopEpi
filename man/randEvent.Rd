@@ -10,6 +10,8 @@ randEvent(pop, t, tMod)
 \item{pop}{A population object}
 
 \item{t}{Time step. Note the population should be AT time t, going to t+1.}
+
+\item{tMod}{Time step modulus the \code{sample} argument in \code{makePop}.}
 }
 \description{
 Randomly selects an event weighted by their rates, runs the event and then calculates a waiting time.
