@@ -148,14 +148,16 @@ makePop <- function(model = 'SIS', nColonies = 5, colonyDistr = 'equal', space =
   #   for all coinfection rows in pop$transitions
   pop$diseaseAdded <- findDiseaseAdded(pop)
 	
-	pop$I <- array(0, dim = c(pop$nClasses, nColonies, sample + 1), dimnames = c('pathogen', 'colony', 'events'))
+	pop$I <- array(0, dim = c(pop$nClasses, nColonies, sample + 1))
 	
 	# Create colony sizes based on model in colonyDistr
 	pop$I[1, , 1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
 
   # Make tmp array.
-  pop$sample <- array(0, dim = c(pop$nClasses, nColonies, events/sample + 1), dimnames = c('pathogen', 'colony', 'events'))
+  pop$sample <- array(0, dim = c(pop$nClasses, nColonies, events/sample + 1))
+
+
 	pop$sample[1,,1] <- do.call(paste0(colonyDistr, 'Pop'), list(nColonies, meanColonySize))
 
   pop <- initTransitions(pop)
