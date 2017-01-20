@@ -72,6 +72,11 @@ plotColonyNet <- function(pop,
     cols <- col
 	}
 	
+	# Save par settings to reset
+	oldpar <- par()
+	on.exit(par(oldpar))
+	
+	
 	par(...)
 	plot(pop$locations, pch = 16, col = cols[1], cex = 0.1,
 		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr, ylim = ylim, xlim = xlim)
