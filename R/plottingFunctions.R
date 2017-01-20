@@ -12,6 +12,8 @@
 #'@param col Point colour
 #'@param area The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both. 
 #'@param alpha Transparency level in range (0, 1).
+#'@param lowgrey Lower limit for grey colours used in lines (between 0 and 1).
+#'@param highgrey Upper limit for grey colours used in lines (between 0 and 1 and greater than lowgrey).
 #'@param ... Further arguments to \code{par}.
 #'@name plotColonyNet
 #'@export
@@ -25,7 +27,10 @@ plotColonyNet <- function(pop,
                           axes = FALSE, 
                           col = 1, 
                           area = NULL, 
-                          alpha = 0.1, ...){
+                          alpha = 0.1, 
+                          lowgrey = 0,
+                          highgrey = 0.4,
+                          ...){
 
 	assert_that(is.numeric(pop$locations), all(c('locations', 'models') %in% names(pop)))
 				
@@ -58,17 +63,17 @@ plotColonyNet <- function(pop,
 
   if(col == 1){
     cols <- palettetown::pokepal('vileplume')[c(9, 3)]
-  }
-
-  if(col == 2){
+  } else if(col == 2){
     cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
+  } else {
+    cols <- col
   }
 	par(...)
 	plot(pop$locations, pch = 16, col = cols[1], cex = 0.1,
 		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr, ylim = ylim, xlim = xlim)
 	
 	apply(edgeLocations, 1, function(x) 
-    lines(x[c(1, 3)], x[c(2, 4)], lwd = x[5], col = alpha(grey(runif(1, 0, 0.4)), alpha)))
+    lines(x[c(1, 3)], x[c(2, 4)], lwd = x[5], col = alpha(grey(runif(1, lowgrey, highgrey)), alpha)))
   points(pop$locations, pch = 21, col = cols[1], bg = cols[2],  cex = 3)
 
 }
