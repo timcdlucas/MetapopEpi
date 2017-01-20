@@ -75,7 +75,7 @@ plotColonyNet <- function(pop,
 	# Save par settings to reset
 	oldpar <- par()
 	
-	supressWarnings(
+	suppressWarnings(
 	  on.exit(par(oldpar))
 	)
 	
