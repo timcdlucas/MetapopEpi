@@ -61,7 +61,7 @@ plotColonyNet <- function(pop,
     }
   }
 
-	if(lengt(col == 2)){
+	if(length(col == 2)){
     if(col == 1){
       cols <- palettetown::pokepal('vileplume')[c(9, 3)]
     } else if(col == 2){
