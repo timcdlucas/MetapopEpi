@@ -9,7 +9,7 @@
 #'@inheritParams seedPathogen
 #'@param lwd Relative line width. This value is scaled to a reasonable value.
 #'@param axes If set to FALSE, don't plot any axes
-#'@param col Point colour
+#'@param col Point colours. Either value 1 or 2 for presets or a length two vector giving the line and fill colours.
 #'@param area The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both. 
 #'@param alpha Transparency level in range (0, 1).
 #'@param lowgrey Lower limit for grey colours used in lines (between 0 and 1).
@@ -61,13 +61,17 @@ plotColonyNet <- function(pop,
     }
   }
 
-  if(col == 1){
-    cols <- palettetown::pokepal('vileplume')[c(9, 3)]
-  } else if(col == 2){
-    cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
-  } else {
+	if(lengt(col == 2)){
+    if(col == 1){
+      cols <- palettetown::pokepal('vileplume')[c(9, 3)]
+    } else if(col == 2){
+      cols <- brewer.pal(12, 'Paired')[col * 2 - c(0, 1)]
+    }
+	} else {
+	  if(length(col) != 2) warning('col should be either 1, 2 or a length 2 vector of colours.')
     cols <- col
-  }
+	}
+	
 	par(...)
 	plot(pop$locations, pch = 16, col = cols[1], cex = 0.1,
 		ylab = ylab, xlab = xlab, xaxt = ax, yaxt = ax, frame = fr, ylim = ylim, xlim = xlim)

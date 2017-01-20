@@ -5,10 +5,10 @@
 \title{Make a new population}
 \usage{
 makePop(model = "SIS", nColonies = 5, colonyDistr = "equal",
-  space = 100, maxDistance = 200, kernel = "unweighted", events = 1e+04,
-  colonySpatialDistr = "uniform", nPathogens = 3, meanColonySize = 1e+04,
-  birth = 1e-03, death = 1e-03, dispersal = 1e-03, transmission = 0.01,
-  recovery = 5e-03, crossImmunity = 0.1, sample = 1000, infectDeath = 0)
+  space = 100, maxDistance = 200, kernel = "unweighted", events = 10000,
+  colonySpatialDistr = "uniform", nPathogens = 3, meanColonySize = 10000,
+  birth = 0.001, death = 0.001, dispersal = 0.001, transmission = 0.01,
+  recovery = 0.005, crossImmunity = 0.1, sample = 1000, infectDeath = 0)
 }
 \arguments{
 \item{model}{Define the model type with a string e.g. 'SI', 'SIS'.}

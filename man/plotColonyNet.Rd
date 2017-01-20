@@ -6,7 +6,7 @@
 \title{Plot the population network in space}
 \usage{
 plotColonyNet(pop, lwd = 1.2, axes = FALSE, col = 1, area = NULL,
-  alpha = 0.1, ...)
+  alpha = 0.1, lowgrey = 0, highgrey = 0.4, ...)
 
 colonyHeat(weightMatrix)
 }
@@ -17,11 +17,15 @@ colonyHeat(weightMatrix)
 
 \item{axes}{If set to FALSE, don't plot any axes}
 
-\item{col}{Point colour}
+\item{col}{Point colours. Either value 1 or 2 for presets or a length two vector giving the line and fill colours.}
 
 \item{area}{The length of the sides of the plotting area. Either a length 2 numeric giving the x and y lengths, or a length one numeric giving the length of both.}
 
 \item{alpha}{Transparency level in range (0, 1).}
+
+\item{lowgrey}{Lower limit for grey colours used in lines (between 0 and 1).}
+
+\item{highgrey}{Upper limit for grey colours used in lines (between 0 and 1 and greater than lowgrey).}
 
 \item{...}{Further arguments to \code{par}.}
 
